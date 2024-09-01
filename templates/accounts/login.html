@@ -1,0 +1,59 @@
+{% extends 'layouts/auth_base.html' %}
+{% load static %}
+
+{% block title %} Login {% endblock title %}
+
+{% block content %}
+  <div class="auth-main">
+    <div class="auth-wrapper v3">
+      <div class="auth-form">
+        <div class="card my-5">
+          <div class="card-body">
+            <a href="#" class="d-flex justify-content-center">
+              <img src="{% static 'assets/images/logo.jpg' %} "  width="200px"/>
+       
+            </a>
+            <div class="row">
+              <div class="d-flex justify-content-center">
+                <div class="auth-header">
+                  <h2 class="text-secondary mt-5"><b>Hola, Bienvenido</b></h2>
+                  {% if error %}
+                  <p style="color: red;">{{ error }}</p>
+              {% endif %}
+                </div>
+
+                
+              </div>
+            </div>
+            <form method="POST" action="{% url 'user_login' %}">
+              {% csrf_token %}
+            <div class="row gy-2 overflow-hidden">
+              <div class="col-12">
+                <div class="form-floating mb-3">
+                  <input  class="form-control" name="email" id="email" required>
+                  <label for="email" class="form-label">Email</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating mb-3">
+                  <input type="password" class="form-control" name="clave" id="clave" value="" placeholder="clave" required>
+                  <label for="clave" class="form-label">clave</label>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="d-grid my-3">
+                  <button class="btn btn-secondary p-2" type="submit">INGRESAR</button>
+                </div>
+              </div>
+            </div>
+          </form>
+            <hr />
+            <!--<h5 class="d-flex justify-content-center">Don't have an account?
+              <a class="ms-2" href="{% url 'register' %}">Register</a>-->
+            </h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}

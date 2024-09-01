@@ -1,0 +1,61 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %} Dashboard {% endblock title %}
+{% block content %}
+  <!-- [ Main Content ] start -->
+  <div class="pc-container">
+    <div class="pc-content">
+      <!-- [ Main Content ] start -->
+      <div class="row">
+        <!-- [ sample-page ] start -->
+        <div class="col-xl-4 col-md-6">
+          <div class="card bg-secondary-dark dashnum-card text-white overflow-hidden">
+            <span class="round small"></span>
+            <span class="round big"></span>
+            <div class="card-body">
+              <div class="row">
+                <div class="col">
+                  <div class="avtar avtar-lg">
+                    <i class="text-white ti ti-credit-card"></i>
+                  </div>
+                </div>
+
+                <div class="col-auto">
+                  <div class="btn-group">
+                 
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      
+                      <li><button class="dropdown-item" type="button">Import Card</button></li>
+                      <li><button class="dropdown-item" type="button">Export</button></li>
+                  
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <span class="text-white d-block f-34 f-w-500 my-2">1350 <i class="ti ti-arrow-up-right-circle opacity-50"></i></span>
+              <p class="mb-0 opacity-50">Total Pending Orders</p>
+            </div>
+        
+          </div>
+        </div>
+    
+        <div class="col-xl-4 col-md-12">
+    
+        </div>
+
+    
+        <!-- [ sample-page ] end -->
+      </div>
+      <!-- [ Main Content ] end -->
+    </div>
+  </div>
+  <!-- [ Main Content ] end -->
+{% endblock content %}
+
+{% block extra_js %}
+  <!-- Apex Chart -->
+  <script src="{% static 'assets/js/plugins/apexcharts.min.js' %}"></script>
+  <script src="{% static 'assets/js/pages/dashboard-default.js' %}"></script>
+  <!-- [Page Specific JS] end -->
+{% endblock extra_js %}

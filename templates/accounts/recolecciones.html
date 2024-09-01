@@ -1,0 +1,327 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="pc-container">
+    <div class="pc-content">
+        <div class="row">
+            <div class="card dashnum-card text-white overflow-hidden">
+                <div class="container">
+                    <div class="row m-4">
+                        <div class="col custom-box text-center" style="color: black; font-size: 24px; font-weight: bold;">
+                            Recolecciones
+                        </div>
+                    </div>
+                    <div class="row m-4">
+                        <div class="col">
+                            <button type="button" class="btn btn-success" id="createProductButton">Crear Recolección</button>
+                        </div>
+                    </div>
+                    <table class="table table-striped table-bordered" id="user-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Empleado</th>
+                                <th>Ruta</th>
+                                <th>Placa</th>
+                                <th>Tipo de basura</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Cantidad</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Edición -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Editar Recolección</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editProductForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="editProductId" name="id">
+                    <div class="form-group">
+                        <label for="editProductCliente">Cliente</label>
+                        <select class="form-control" id="editProductCliente" name="cliente_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductEmpleado">Empleado</label>
+                        <select class="form-control" id="editProductEmpleado" name="empleado_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductRuta">Ruta</label>
+                        <select class="form-control" id="editProductRuta" name="ruta_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductVehiculo">Vehículo</label>
+                        <select class="form-control" id="editProductVehiculo" name="vehiculo_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductTipoBasura">Tipo de Basura</label>
+                        <select class="form-control" id="editProductTipoBasura" name="tipo_basura_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductFecha">Fecha</label>
+                        <input type="date" class="form-control" id="editProductFecha" name="fecha">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductHora">Hora</label>
+                        <input type="time" class="form-control" id="editProductHora" name="hora">
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductCantidad">Cantidad</label>
+                        <input type="number" class="form-control" id="editProductCantidad" name="cantidad">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveEditProduct">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Creación -->
+<div id="createProductModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Crear Recolección</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createProductForm">
+                    <div class="form-group">
+                        <label for="createProductCliente">Cliente</label>
+                        <select class="form-control" id="createProductCliente" name="cliente_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductEmpleado">Empleado</label>
+                        <select class="form-control" id="createProductEmpleado" name="empleado_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductRuta">Ruta</label>
+                        <select class="form-control" id="createProductRuta" name="ruta_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductVehiculo">Vehículo</label>
+                        <select class="form-control" id="createProductVehiculo" name="vehiculo_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductTipoBasura">Tipo de Basura</label>
+                        <select class="form-control" id="createProductTipoBasura" name="tipo_basura_id"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductFecha">Fecha</label>
+                        <input type="date" class="form-control" id="createProductFecha" name="fecha">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductHora">Hora</label>
+                        <input type="time" class="form-control" id="createProductHora" name="hora">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductCantidad">Cantidad</label>
+                        <input type="number" class="form-control" id="createProductCantidad" name="cantidad">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveCreateProduct">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+$(document).ready(function() {
+    $.ajax({
+        url: '/get/recolecciones/',
+        method: 'GET',
+        success: function(response) {
+            let recolecciones = response.recolecciones;
+            let tableBody = $('#user-table tbody');
+            
+            recolecciones.forEach(function(recoleccion) {
+                let row = `
+                    <tr>
+                        <td>${recoleccion.id}</td>
+                        <td>${recoleccion.Cliente}</td>
+                        <td>${recoleccion.Empleado}</td>
+                        <td>${recoleccion.Ruta}</td>
+                        <td>${recoleccion.Placa}</td>
+                        <td>${recoleccion.Tipo_basura}</td>
+                        <td>${recoleccion.Fecha}</td>
+                        <td>${recoleccion.Hora}</td>
+                        <td>${recoleccion.Cantidad}</td>
+                        <td>
+                            <button class="btn btn-primary btn-edit" data-id="${recoleccion.id}">Editar</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+
+            $('#user-table').DataTable();
+
+            response.clientes.forEach(function(cliente) {
+                $('#createProductCliente, #editProductCliente').append(`<option value="${cliente.id}">${cliente.nombre}</option>`);
+            });
+            response.empleados.forEach(function(empleado) {
+                $('#createProductEmpleado, #editProductEmpleado').append(`<option value="${empleado.id}">${empleado.nombre}</option>`);
+            });
+            response.rutas.forEach(function(ruta) {
+                $('#createProductRuta, #editProductRuta').append(`<option value="${ruta.id}">${ruta.descripcion}</option>`);
+            });
+            response.vehiculos.forEach(function(vehiculo) {
+                $('#createProductVehiculo, #editProductVehiculo').append(`<option value="${vehiculo.id}">${vehiculo.placa}</option>`);
+            });
+            response.tipos_basura.forEach(function(tipo) {
+                $('#createProductTipoBasura, #editProductTipoBasura').append(`<option value="${tipo.id}">${tipo.descripcion}</option>`);
+            });
+        }
+    });
+
+    $('#createProductButton').click(function() {
+        $('#createProductModal').modal('show');
+    });
+
+    // Guardar nueva recolección
+    $('#saveCreateProduct').click(function() {
+        const newRecoleccion = {
+            cliente_id: $('#createProductCliente').val(),
+            empleado_id: $('#createProductEmpleado').val(),
+            ruta_id: $('#createProductRuta').val(),
+            vehiculo_id: $('#createProductVehiculo').val(),
+            tipo_basura_id: $('#createProductTipoBasura').val(),
+            fecha: $('#createProductFecha').val(),
+            hora: $('#createProductHora').val(),
+            cantidad: $('#createProductCantidad').val(),
+        };
+
+        if (!newRecoleccion.cliente_id || !newRecoleccion.empleado_id || !newRecoleccion.ruta_id ||
+            !newRecoleccion.vehiculo_id || !newRecoleccion.tipo_basura_id || !newRecoleccion.fecha ||
+            !newRecoleccion.hora || !newRecoleccion.cantidad) {
+            alert('Por favor, complete todos los campos.');
+            return;
+        }
+
+        $.ajax({
+            url: '/recolecciones/',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(newRecoleccion),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            },
+            success: function() {
+                $('#createProductModal').modal('hide');
+                location.reload();
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-edit', function() {
+        const id = $(this).data('id');
+        
+        $.ajax({
+            url: `/get/recolecciones/${id}/`,
+            method: 'GET',
+            success: function(response) {
+                $('#editProductId').val(response.id);
+                $('#editProductCliente').val(response.clientes_id);
+                $('#editProductEmpleado').val(response.empleado_id);
+                $('#editProductRuta').val(response.ruta_id);
+                $('#editProductVehiculo').val(response.vehiculo_id);
+                $('#editProductTipoBasura').val(response.tipo_basura_id);
+                $('#editProductFecha').val(response.fecha);
+                $('#editProductHora').val(response.hora);
+                $('#editProductCantidad').val(response.cantidad);
+
+                $('#editProductModal').modal('show');
+            }
+        });
+    });
+
+    // Guardar cambios de edición
+    $('#saveEditProduct').click(function() {
+        const updatedRecoleccion = {
+            cliente_id: $('#editProductCliente').val(),
+            empleado_id: $('#editProductEmpleado').val(),
+            ruta_id: $('#editProductRuta').val(),
+            vehiculo_id: $('#editProductVehiculo').val(),
+            tipo_basura_id: $('#editProductTipoBasura').val(),
+            fecha: $('#editProductFecha').val(),
+            hora: $('#editProductHora').val(),
+            cantidad: $('#editProductCantidad').val(),
+        };
+
+        const id = $('#editProductId').val();
+
+        if (!updatedRecoleccion.cliente_id || !updatedRecoleccion.empleado_id || !updatedRecoleccion.ruta_id ||
+            !updatedRecoleccion.vehiculo_id || !updatedRecoleccion.tipo_basura_id || !updatedRecoleccion.fecha ||
+            !updatedRecoleccion.hora || !updatedRecoleccion.cantidad) {
+            alert('Por favor, complete todos los campos.');
+            return;
+        }
+
+        $.ajax({
+            url: `/recolecciones/${id}/`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(updatedRecoleccion),
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            },
+            success: function() {
+                $('#editProductModal').modal('hide');
+                location.reload();
+            }
+        });
+    });
+
+    // Handle delete button click
+    $(document).on('click', '.btn-delete', function() {
+        const id = $(this).data('id');
+
+        $.ajax({
+            url: `/get/recolecciones/?id=${id}`,
+            method: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', csrftoken);
+            },
+            success: function() {
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% block content %}
+<div class="pc-container">
+    <div class="pc-content">
+        <div class="row">
+            <div class="card dashnum-card text-white overflow-hidden">
+                <div class="container">
+                    <div class="row m-4">
+                        <div class="col custom-box text-center" style="color: black; font-size: 24px; font-weight: bold;">
+                            COTIZACIONES
+                        </div>
+                    </div>
+
+                    {% if rol == 'Comercial' %}
+                    <div class="row m-4">
+                        <div class="col ">
+                            <button type="button" class="btn btn-success" id="createCotizacionButton">Crear Cotización</button>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <table class="table table-striped table-bordered" id="cotizacion-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Empleado</th>
+                                <th>Material</th>
+                                <th>Cantidad Solicitada</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Cruce de Costos</th>
+                                <th>Estado</th>
+                                <th>Tipo de Cotización</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Creación/Edición -->
+<div id="cotizacionModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="cotizacionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cotizacionModalLabel">Cotización</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="cotizacionForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="cotizacionId" name="cotizacion_id">
+                    
+                    <div class="form-group">
+                        <label for="clienteId">Cliente</label>
+                        <select class="form-control" id="clienteId" name="cliente_id" required></select>
+                        <option value="">Seleccione un tipo de cotización</option>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="empleadoId">Empleado</label>
+                        <select class="form-control" id="empleadoId" name="empleado_id" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="materialId">Material</label>
+                        <select class="form-control" id="materialId" name="material_id" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidadDisponible">Cantidad Disponible</label>
+                        <input type="text" class="form-control" id="cantidadDisponible" name="cantidad_disponible" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidadSolicitada">Cantidad Solicitada</label>
+                        <input type="number" class="form-control" id="cantidadSolicitada" name="cantidad_solicitada" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tipoCotizacionId">Tipo de Cotización</label>
+                        <select class="form-control" id="tipoCotizacionId" name="tipo_cotizacion_id" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha">Fecha</label>
+                        <input type="date" class="form-control" id="fecha" name="fecha" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total">Total</label>
+                        <input type="number" step="0.01" class="form-control" id="total" name="total" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cruceCostos">Cruce de Costos</label>
+                        <input type="number" step="0.01" class="form-control" id="cruceCostos" name="cruce_costos" readonly>
+                    </div>
+
+                    {% if rol == 'Logistica' %}
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select class="form-control" id="estado" name="estado">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Aprobada">Aprobada</option>
+                            <option value="Rechazada">Rechazada</option>
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    {% if rol == 'Comercial' %}
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select class="form-control" id="estado" name="estado" disabled>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Aprobada">Aprobada</option>
+                            <option value="Rechazada">Rechazada</option>
+                        </select>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="saveCotizacion">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+$(document).ready(function() {
+    $.ajax({
+        url: '/cotizaciones/',
+        method: 'GET',
+        success: function(response) {
+            let cotizaciones = response.cotizaciones;
+            let tableBody = $('#cotizacion-table tbody');
+            cotizaciones.forEach(function(cotizacion) {
+                let row = `
+                    <tr>
+                        <td>${cotizacion.id}</td>
+                        <td>${cotizacion.cliente}</td>
+                        <td>${cotizacion.empleado}</td>
+                        <td>${cotizacion.material}</td>
+                        <td>${cotizacion.cantidad}</td>
+                        <td>${cotizacion.fecha}</td>
+                        <td>${cotizacion.total}</td>
+                        <td>${cotizacion.cruce}</td>
+                        <td>${cotizacion.estado}</td>
+                        <td>${cotizacion.tip_cotizacion}</td>
+                        <td>
+                            <button class="btn btn-primary btn-edit" data-id="${cotizacion.id}">Editar</button>
+                        </td>
+                    </tr>
+                `;
+                tableBody.append(row);
+            });
+
+            $('#cotizacion-table').DataTable();
+        }
+    });
+
+    // Obtener clientes, empleados, materiales y tipos de cotización para los formularios
+    $.ajax({
+        url: '/obtener_formulario_datos/',
+        method: 'GET',
+        success: function(response) {
+            let clientes = response.clientes;
+            let empleados = response.empleados;
+            let tipos_cotizacion = response.tipos_cotizacion;
+            let inventario = response.inventario_list;
+
+            let clienteOptions = '';
+            clientes.forEach(function(cliente) {
+                clienteOptions += `<option value="${cliente.cliente_id}">${cliente.nombre}</option>`;
+            });
+            $('#clienteId').html(clienteOptions);
+
+            let empleadoOptions = '';
+            empleados.forEach(function(empleado) {
+                empleadoOptions += `<option value="${empleado.empleado_id}">${empleado.nombre}</option>`;
+            });
+            $('#empleadoId').html(empleadoOptions);
+
+            let tipoCotizacionOptions = '';
+            tipos_cotizacion.forEach(function(tipo) {
+                tipoCotizacionOptions += `<option value="${tipo.tipo_cotizacion_id}">${tipo.descripcion}</option>`;
+            });
+            $('#tipoCotizacionId').html(tipoCotizacionOptions);
+
+            let materialOptions = '';
+            inventario.forEach(function(material) {
+                materialOptions += `<option value="${material.MaterialID}" data-cantidad="${material.cantidad_disponible}">${material.descripcion}</option>`;
+            });
+            $('#materialId').html(materialOptions);
+        }
+    });
+
+    $('#materialId').change(function() {
+        let selectedMaterial = $(this).find('option:selected');
+        let cantidadDisponible = selectedMaterial.data('cantidad');
+        $('#cantidadDisponible').val(cantidadDisponible);
+    });
+
+    $('#createCotizacionButton').click(function() {
+        $('#cotizacionModalLabel').text('Crear Cotización');
+        $('#cotizacionForm')[0].reset();
+        $('#cruceCostos').val('');
+        $('#cotizacionId').val('');
+        $('#cotizacionModal').modal('show');
+    });
+
+    $(document).on('click', '.btn-edit', function() {
+        let cotizacionId = $(this).data('id');
+        $.ajax({
+            url: `/cotizacion/${cotizacionId}/`,
+            method: 'GET',
+            success: function(response) {
+                $('#cotizacionModalLabel').text('Editar Cotización');
+                $('#cotizacionId').val(response.id);
+                $('#clienteId').val(response.cliente_id);
+                $('#empleadoId').val(response.empleado_id);
+                $('#materialId').val(response.material_id);
+                $('#cantidadSolicitada').val(response.cantidad);
+                $('#tipoCotizacionId').val(response.tipo_cotizacion_id);
+                $('#fecha').val(response.fecha);
+                $('#total').val(response.total);
+                $('#cruceCostos').val(response.cruce_costos);
+                $('#estado').val(response.estado);
+                $('#cotizacionModal').modal('show');
+            }
+        });
+    });
+
+    $('#total, #tipoCotizacionId').on('input change', function() {
+        let total = parseFloat($('#total').val()) || 0;
+        let tipoCotizacionId = parseInt($('#tipoCotizacionId').val()) || 0;
+        let cruceCostos = 0;
+
+        if (tipoCotizacionId === 1) {
+            cruceCostos = total * 0.8;  
+        } else if (tipoCotizacionId === 2) {
+            cruceCostos = total * 1.2;  
+        }
+
+        $('#cruceCostos').val(cruceCostos.toFixed(2));
+    });
+    $('#saveCotizacion').click(function() {
+        let formValid = true;
+        $('#cotizacionForm select, #cotizacionForm input').each(function() {
+            if ($(this).prop('required')) {
+                if (!$(this).val()) {
+                    $(this).addClass('is-invalid');
+                    formValid = false;
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            }
+        });
+
+        if (!formValid) {
+            alert('Por favor, complete todos los campos obligatorios.');
+            return;
+        }
+
+        let formData = {
+            cliente_id: $('#clienteId').val(),
+            empleado_id: $('#empleadoId').val(),
+            material_id: $('#materialId').val(),
+            cantidad_solicitada: $('#cantidadSolicitada').val(),
+            tipo_cotizacion_id: $('#tipoCotizacionId').val(),
+            fecha: $('#fecha').val(),
+            total: $('#total').val(),
+            cruce_costos: $('#cruceCostos').val(),
+            estado: $('#estado').val()
+        };
+
+        let cotizacionId = $('#cotizacionId').val();
+        let url = '/cotizacion/' + (cotizacionId ? cotizacionId + '/' : '');
+        let method = cotizacionId ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            method: method,
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify(formData),
+            success: function(response) {
+                $('#cotizacionModal').modal('hide');
+                location.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al guardar la cotización:', error);
+            }
+        });
+    });
+
+    $(document).on('click', '.btn-delete', function() {
+        let cotizacionId = $(this).data('id');
+        if (confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
+            $.ajax({
+                url: `/cotizacion/${cotizacionId}/`,
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': csrftoken },
+                success: function(response) {
+                    location.reload();
+                }
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
