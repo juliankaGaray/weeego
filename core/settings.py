@@ -121,6 +121,7 @@ USE_TZ = True
 # Archivos estáticos (CSS, JavaScript, Imágenes)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+WHITENOISE_MANIFEST_STRICT = False
 
 # Configuración de almacenamiento de archivos estáticos
 if not DEBUG:
