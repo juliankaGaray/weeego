@@ -6,6 +6,8 @@ str2bool==1.1
 # UI 
 django-admin-berry==1.0.10
 
+daphne==4.1.2
+
 # Deployment
 whitenoise==6.6.0
 gunicorn==21.2.0
@@ -18,4 +20,3 @@ gunicorn==21.2.0
 mssql-django==1.5
 pyodbc==5.1.0
 
-daphne==4.1.2
