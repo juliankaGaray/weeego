@@ -85,7 +85,7 @@ DATABASES = {
         'NAME': 'RECOLECCION_BD',  # Nombre de tu base de datos
         'USER': 'admin1',  # Usuario de Azure SQL
         'PASSWORD': 'Weeego123',  # Contraseña de Azure SQL
-        'HOST': 'srvweeego.database.windows.net',  # Servidor de Azure SQL
+        'HOST': 'srvweeegoo.database.windows.net',  # Servidor de Azure SQL
         'PORT': '1433',  # Puerto de Azure SQL (por defecto 1433)
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
