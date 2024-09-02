@@ -125,7 +125,7 @@ WHITENOISE_MANIFEST_STRICT = False
 
 # Configuración de almacenamiento de archivos estáticos
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Configuración de campo clave primaria
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
