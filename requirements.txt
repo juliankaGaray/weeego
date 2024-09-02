@@ -15,5 +15,5 @@ gunicorn==21.2.0
 # mysqlclient
 
 
-mssql-django
-pyodbc
+mssql-django==1.5
+pyodbc==5.1.0
