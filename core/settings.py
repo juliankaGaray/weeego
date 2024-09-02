@@ -5,6 +5,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from str2bool import str2bool
 
+# Este es un comentario para forzar un nuevo commit
+
 load_dotenv()  # Cargar variables de entorno desde .env
 
 # Construir rutas dentro del proyecto como BASE_DIR / 'subdir'.
