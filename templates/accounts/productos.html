@@ -77,14 +77,17 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="createProductName">Nombre</label>
-                    <input type="text" class="form-control" id="createProductName">
-                </div>
-                <div class="form-group">
-                    <label for="createProductDescription">Descripción</label>
-                    <input type="text" class="form-control" id="createProductDescription">
-                </div>
+                <form id="createProductForm">
+                {% csrf_token %}   
+                    <div class="form-group">
+                        <label for="createProductName">Nombre</label>
+                        <input type="text" class="form-control" id="createProductName" name="nombre">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductDescription">Descripción</label>
+                        <input type="text" class="form-control" id="createProductDescription" name="descripcion">
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="saveCreateProduct">Guardar</button>

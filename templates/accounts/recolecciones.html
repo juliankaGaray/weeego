@@ -102,6 +102,7 @@
             </div>
             <div class="modal-body">
                 <form id="createProductForm">
+                    {% csrf_token %}
                     <div class="form-group">
                         <label for="createProductCliente">Cliente</label>
                         <select class="form-control" id="createProductCliente" name="cliente_id"></select>

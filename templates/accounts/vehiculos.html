@@ -77,18 +77,21 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="createProductName">Placa</label>
-                    <input type="text" class="form-control" id="createProductName">
-                </div>
-                <div class="form-group">
-                    <label for="createProductDescription">Modelo</label>
-                    <input type="text" class="form-control" id="createProductDescription">
-                </div>
-                <div class="form-group">
-                    <label for="createProductCapacity">Capacidad</label>
-                    <input type="text" class="form-control" id="createProductCapacity">
-                </div>
+                <form id="createProductForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="createProductName">Placa</label>
+                        <input type="text" class="form-control" id="createProductName" name="placa">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductDescription">Modelo</label>
+                        <input type="text" class="form-control" id="createProductDescription" name="modelo">
+                    </div>
+                    <div class="form-group">
+                        <label for="createProductCapacity">Capacidad</label>
+                        <input type="text" class="form-control" id="createProductCapacity" name="capacidad">
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="saveCreateProduct">Guardar</button>
@@ -143,25 +146,22 @@ $(document).ready(function() {
 
     // Abrir el modal de creación
     $('#createProductButton').click(function() {
+        $('#createProductForm')[0].reset();
         $('#createProductModal').modal('show');
     });
 
     // Guardar nuevo vehículo
     $('#saveCreateProduct').click(function() {
-        let placa = $('#createProductName').val();
-        let modelo = $('#createProductDescription').val();
-        let capacidad = $('#createProductCapacity').val();
+        const formData = {
+            placa: $('#createProductName').val(),
+            modelo: $('#createProductDescription').val(),
+            capacidad: $('#createProductCapacity').val()
+        };
 
-        if (!placa || !modelo || !capacidad) {
+        if (!formData.placa || !formData.modelo || !formData.capacidad) {
             alert('Por favor, complete todos los campos.');
             return;
         }
-
-        let formData = {
-            placa: placa,
-            modelo: modelo,
-            capacidad: capacidad
-        };
 
         $.ajax({
             url: '/vehiculos/',
@@ -186,7 +186,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-edit', function() {
         let vehiculoId = $(this).data('id');
         $.ajax({
-            url: `/vehiculos/${vehiculoId}/`,
+            url: /vehiculos/${vehiculoId}/,
             method: 'GET',
             success: function(response) {
                 $('#editProductId').val(response.id);
@@ -200,24 +200,21 @@ $(document).ready(function() {
 
     // Guardar cambios de edición
     $('#saveEditProduct').click(function() {
-        let vehiculoId = $('#editProductId').val();
-        let placa = $('#editProductName').val();
-        let modelo = $('#editProductDescription').val();
-        let capacidad = $('#editProductCapacity').val();
+        const formData = {
+            placa: $('#editProductName').val(),
+            modelo: $('#editProductDescription').val(),
+            capacidad: $('#editProductCapacity').val()
+        };
 
-        if (!placa || !modelo || !capacidad) {
+        const vehiculoId = $('#editProductId').val();
+
+        if (!formData.placa || !formData.modelo || !formData.capacidad) {
             alert('Por favor, complete todos los campos.');
             return;
         }
 
-        let formData = {
-            placa: placa,
-            modelo: modelo,
-            capacidad: capacidad
-        };
-
         $.ajax({
-            url: `/vehiculos/${vehiculoId}/`,
+            url: /vehiculos/${vehiculoId}/,
             method: 'PUT',
             headers: {
                 'X-CSRFToken': csrftoken,
@@ -233,10 +230,10 @@ $(document).ready(function() {
 
     // Eliminar vehículo
     $(document).on('click', '.btn-delete', function() {
-        let vehiculoId = $(this).data('id');
+        const vehiculoId = $(this).data('id');
         if (confirm('¿Estás seguro de que deseas eliminar este vehículo?')) {
             $.ajax({
-                url: `/vehiculos/${vehiculoId}/`,
+                url: /vehiculos/${vehiculoId}/,
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': csrftoken },
                 success: function(response) {
