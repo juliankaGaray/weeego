@@ -1,7 +1,7 @@
 import pyodbc
 import os
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout, authenticate
+from django.contrib.auth import logout,authenticate
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -17,10 +17,14 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 
+
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponseBadRequest
+import pyodbc
+from django.conf import settings
+
 
 # Create your views here.
 
@@ -71,17 +75,7 @@ def user_login(request):
         clave = request.POST.get('clave')
         next_url = request.POST.get('next', 'index')
         
-        # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-        connection_string = (
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={settings.DATABASES['default']['HOST']};"
-            f"DATABASE={settings.DATABASES['default']['NAME']};"
-            f"UID={settings.DATABASES['default']['USER']};"
-            f"PWD={settings.DATABASES['default']['PASSWORD']};"
-            f"TrustServerCertificate=yes;"
-        )
-        
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute('SELECT * FROM usuarios WHERE email = ?', (email,))
         user_record = cursor.fetchone()
@@ -97,6 +91,7 @@ def user_login(request):
                     }
                 )
             except IntegrityError:
+             
                 user = User.objects.get(email=email)
                 user.email = email
                 user.set_password(user_record[2])
@@ -132,21 +127,15 @@ def registro(request):
         email = request.POST.get('email')
         fecha = request.POST.get('fecha')
 
+
+
         hashed_password = make_password(password)
 
-        # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-        connection_string = (
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={settings.DATABASES['default']['HOST']};"
-            f"DATABASE={settings.DATABASES['default']['NAME']};"
-            f"UID={settings.DATABASES['default']['USER']};"
-            f"PWD={settings.DATABASES['default']['PASSWORD']};"
-            f"TrustServerCertificate=yes;"
-        )
      
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
 
+       
         cursor.execute('INSERT INTO usuarios (nombre_usuario,contrasena,nombre_completo,rol,email,fecha_creacion) VALUES (?, ?, ?,?,?,?)',(username,hashed_password,nombre,rol,email, fecha))
         conn.commit()
         conn.close()
@@ -163,28 +152,19 @@ def user_logout(request):
 
 @login_required
 def productos(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * from Rutas")
     rows = cursor.fetchall()
 
+
     productos = []
     for row in rows:
         productos.append({
           'id': row[0],
-          'nombre': row[1],
-          'descripcion' : row[2] 
+                'nombre': row[1],
+                'descripcion' : row[2] 
         })
 
     print(productos)
@@ -198,18 +178,8 @@ def productos(request):
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT"])
 def producto_detalle(request, product_id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
     if request.method == "GET" and product_id:
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM rutas WHERE ruta_id=?", (product_id,))
         row = cursor.fetchone()
@@ -233,10 +203,11 @@ def producto_detalle(request, product_id=None):
             nombre = data.get('nombre')
             descripcion = data.get('descripcion')
             
+
             if not all([nombre, descripcion]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO rutas (nombre, descripcion)
@@ -252,7 +223,7 @@ def producto_detalle(request, product_id=None):
     elif request.method == "PUT" and product_id:
         try:
             data = json.loads(request.body.decode('utf-8'))
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE rutas
@@ -268,33 +239,27 @@ def producto_detalle(request, product_id=None):
 
     return HttpResponseBadRequest()
 
+
+
 @login_required
 def vehiculos(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * from Vehículos")
     rows = cursor.fetchall()
 
+
     vehiculos = []
     for row in rows:
         vehiculos.append({
           'id': row[0],
-          'placa': row[1],
-          'modelo' : row[2],
-          'capacidad': row[3]
+                'placa': row[1],
+                'modelo' : row[2],
+                'capacidad': row[3]
         })
 
+ 
     cursor.close()
     conn.close()
 
@@ -305,25 +270,15 @@ def vehiculos(request):
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT"])
 def vehiculos_detalle(request, vehiculo_id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
     if request.method == "GET" and vehiculo_id:
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Vehículos WHERE vehiculo_id=?", (vehiculo_id,))
         row = cursor.fetchone()
         if row:
             vehiculos = {
                 'id': row[0],
-                'placa': row[1],
+                  'placa': row[1],
                 'modelo' : row[2],
                 'capacidad': row[3]
             }
@@ -336,16 +291,18 @@ def vehiculos_detalle(request, vehiculo_id=None):
             return JsonResponse({'error': 'Vehiculo no encontrado'}, status=404)
 
     elif request.method == "POST":
+        print("Entro al if")
         try:
             data = json.loads(request.body.decode('utf-8'))
             placa = data.get('placa')
             modelo = data.get('modelo')
             capacidad = data.get('capacidad')
            
+
             if not all([placa, modelo, capacidad]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO Vehículos (placa, modelo, capacidad)
@@ -362,7 +319,7 @@ def vehiculos_detalle(request, vehiculo_id=None):
         try:
             data = json.loads(request.body.decode('utf-8'))
             
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE Vehículos
@@ -378,21 +335,12 @@ def vehiculos_detalle(request, vehiculo_id=None):
 
     return HttpResponseBadRequest()
 
+
 @login_required
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT", "DELETE"])
 def recolecciones(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     if request.method == "GET":
@@ -537,63 +485,47 @@ inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
     return HttpResponseBadRequest()
 
 
+
 #Clientes
 
 def clientes(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     cursor.execute("SELECT * from Clientes")
     rows = cursor.fetchall()
 
+
     clientes = []
     for row in rows:
         clientes.append({
           'id': row[0],
-          'nombre': row[1],
-          'direccion' : row[2],
-          'telefono': row[3],
-          'email': row[4]
+                'nombre': row[1],
+                'direccion' : row[2],
+                'telefono': row[3],
+                'email': row[4]
         })
 
+ 
     cursor.close()
     conn.close()
 
     return JsonResponse({'clientes': clientes})
 
 
+
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT"])
 def clientes_detalle(request, cliente_id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
     if request.method == "GET" and cliente_id:
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM clientes WHERE cliente_id=?", (cliente_id,))
         row = cursor.fetchone()
         if row:
             clientes = {
                 'id': row[0],
-                'nombre': row[1],
+                  'nombre': row[1],
                 'direccion' : row[2],
                 'telefono': row[3],
                 'email': row[4]
@@ -607,6 +539,7 @@ def clientes_detalle(request, cliente_id=None):
             return JsonResponse({'error': 'cliente no encontrado'}, status=404)
 
     elif request.method == "POST":
+        
         try:
             data = json.loads(request.body.decode('utf-8'))
             nombre = data.get('nombre')
@@ -614,10 +547,11 @@ def clientes_detalle(request, cliente_id=None):
             telefono = data.get('telefono')
             email = data.get('email')
            
+
             if not all([nombre, direccion, telefono,email]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO clientes (nombre, direccion, telefono,email)
@@ -631,10 +565,11 @@ def clientes_detalle(request, cliente_id=None):
             return JsonResponse({'error': str(e)}, status=400)
 
     elif request.method == "PUT" and cliente_id:
+        
         try:
             data = json.loads(request.body.decode('utf-8'))
             print(data)
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE clientes
@@ -651,17 +586,7 @@ def clientes_detalle(request, cliente_id=None):
     return HttpResponseBadRequest()
 
 def cotizaciones(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
     cursor.execute("""    SELECT co.cotizacion_id, emp.nombre, cli.nombre,co.fecha,co.total,co.estado, tip.descripcion,cruce_costos, inv.descripcion,co.cantidad from Cotizaciones as co inner join Clientes cli on cli.cliente_id = co.cliente_id
 inner join Empleados emp on emp.empleado_id = co.empleado_id
@@ -691,17 +616,7 @@ inner join inventarioMateriales inv on co.material_id = inv.MaterialID""")
 
 
 def obtener_datos_formulario():
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
     
     cursor.execute("SELECT cliente_id, nombre FROM Clientes")
@@ -731,18 +646,8 @@ def obtener_datos_formulario():
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT", "DELETE"])
 def cotizacion_detalle(request, cotizacion_id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
     if request.method == "GET" and cotizacion_id:
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
         row = cursor.fetchone()
@@ -784,7 +689,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 INSERT INTO Cotizaciones (cliente_id, empleado_id, material_id, cantidad, fecha, total, estado, tipo_cotizacion_id, cruce_costos)
@@ -813,7 +718,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("""
                 UPDATE Cotizaciones
@@ -829,7 +734,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
 
     elif request.method == "DELETE" and cotizacion_id:
         try:
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
             cursor.execute("DELETE FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
             conn.commit()
@@ -840,6 +745,8 @@ def cotizacion_detalle(request, cotizacion_id=None):
             return JsonResponse({'error': str(e)}, status=400)
 
     return HttpResponseBadRequest()
+
+
 
 
 def calcular_cruce_costos(tipo_cotizacion_id, total):
@@ -854,22 +761,16 @@ def obtener_formulario_datos(request):
     data = obtener_datos_formulario()
     return JsonResponse(data)
 
-def inventario(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
 
-    conn = pyodbc.connect(connection_string)
+
+def inventario(request):
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
     cursor.execute("""  SELECT * from InventarioMateriales """)
     rows = cursor.fetchall()
 
+
+    
     inventario = []
     for row in rows:
         inventario.append({
@@ -891,17 +792,7 @@ def inventario(request):
     return JsonResponse({'inventario': inventario})
 
 def inventario_detalle(request, id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     if request.method == 'GET':
