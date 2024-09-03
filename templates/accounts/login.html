@@ -6,7 +6,7 @@
 {% block content %}
   <style>
     body {
-        background-color: #D8E8C3; /* primaryColor: Fondo de la página */
+        background-color: #DAF7A6; /* primaryColor: Fondo de la página */
     }
     .auth-main {
         background-color: #D8E8C3; /* primaryColor: Fondo general de la sección de autenticación */
@@ -19,8 +19,13 @@
 
     .welcome-text {
       color: #4BB649; /* primaryColorVo */
-  }
-   
+    }
+
+    .form-floating .form-control:hover {
+      background-color: #DAF7A6; /* Color de imput */
+      border-color: #DAF7A6; /* Borde solor de imput */
+    }
+
     .btn-secondary {
         background-color: #4BB649; /* primaryColorVc: Color verde del botón */
         border-color: #4BB649;
@@ -29,6 +34,13 @@
         background-color: #008E50; /* primaryColorVo: Un verde más oscuro para el hover */
         border-color: #008E50;
     }
+
+    .btn-secondary:active, .btn-secondary:focus {
+      background-color: #4BB649; /* primaryColorVo: Verde más oscuro para el estado activo */
+      border-color: #4BB649; /* Mismo color para el borde en estado activo */
+      box-shadow: 0 0 0 0.2rem rgba(72, 118, 79, 0.5); /* O un efecto de sombra, opcional */
+    }
+
     .text-secondary {
         color: #4BB649; /* primaryColorOs: Color del texto del encabezado */
     }
