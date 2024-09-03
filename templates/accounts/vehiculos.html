@@ -78,18 +78,18 @@
             </div>
             <div class="modal-body">
                 <form id="createProductForm">
-                    {% csrf_token %}
+                {% csrf_token %}
                     <div class="form-group">
                         <label for="createProductName">Placa</label>
-                        <input type="text" class="form-control" id="createProductName" name="placa">
+                        <input type="text" class="form-control" id="createProductName">
                     </div>
                     <div class="form-group">
                         <label for="createProductDescription">Modelo</label>
-                        <input type="text" class="form-control" id="createProductDescription" name="modelo">
+                        <input type="text" class="form-control" id="createProductDescription">
                     </div>
                     <div class="form-group">
                         <label for="createProductCapacity">Capacidad</label>
-                        <input type="text" class="form-control" id="createProductCapacity" name="capacidad">
+                        <input type="text" class="form-control" id="createProductCapacity">
                     </div>
                 </form>
             </div>
@@ -126,7 +126,7 @@ $(document).ready(function() {
             let vehiculos = response.vehiculos;
             let tableBody = $('#user-table tbody');
             vehiculos.forEach(function(vehiculo) {
-                let row = `
+                let row = 
                     <tr>
                         <td>${vehiculo.id}</td>
                         <td>${vehiculo.placa}</td>
@@ -136,7 +136,7 @@ $(document).ready(function() {
                             <button class="btn btn-primary btn-edit" data-id="${vehiculo.id}">Editar</button>
                         </td>
                     </tr>
-                `;
+                ;
                 tableBody.append(row);
             });
 
@@ -146,22 +146,25 @@ $(document).ready(function() {
 
     // Abrir el modal de creación
     $('#createProductButton').click(function() {
-        $('#createProductForm')[0].reset();
         $('#createProductModal').modal('show');
     });
 
     // Guardar nuevo vehículo
     $('#saveCreateProduct').click(function() {
-        const formData = {
-            placa: $('#createProductName').val(),
-            modelo: $('#createProductDescription').val(),
-            capacidad: $('#createProductCapacity').val()
-        };
+        let placa = $('#createProductName').val();
+        let modelo = $('#createProductDescription').val();
+        let capacidad = $('#createProductCapacity').val();
 
-        if (!formData.placa || !formData.modelo || !formData.capacidad) {
+        if (!placa || !modelo || !capacidad) {
             alert('Por favor, complete todos los campos.');
             return;
         }
+
+        let formData = {
+            placa: placa,
+            modelo: modelo,
+            capacidad: capacidad
+        };
 
         $.ajax({
             url: '/vehiculos/',
@@ -200,18 +203,21 @@ $(document).ready(function() {
 
     // Guardar cambios de edición
     $('#saveEditProduct').click(function() {
-        const formData = {
-            placa: $('#editProductName').val(),
-            modelo: $('#editProductDescription').val(),
-            capacidad: $('#editProductCapacity').val()
-        };
+        let vehiculoId = $('#editProductId').val();
+        let placa = $('#editProductName').val();
+        let modelo = $('#editProductDescription').val();
+        let capacidad = $('#editProductCapacity').val();
 
-        const vehiculoId = $('#editProductId').val();
-
-        if (!formData.placa || !formData.modelo || !formData.capacidad) {
+        if (!placa || !modelo || !capacidad) {
             alert('Por favor, complete todos los campos.');
             return;
         }
+
+        let formData = {
+            placa: placa,
+            modelo: modelo,
+            capacidad: capacidad
+        };
 
         $.ajax({
             url: /vehiculos/${vehiculoId}/,
@@ -230,7 +236,7 @@ $(document).ready(function() {
 
     // Eliminar vehículo
     $(document).on('click', '.btn-delete', function() {
-        const vehiculoId = $(this).data('id');
+        let vehiculoId = $(this).data('id');
         if (confirm('¿Estás seguro de que deseas eliminar este vehículo?')) {
             $.ajax({
                 url: /vehiculos/${vehiculoId}/,
