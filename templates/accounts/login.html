@@ -16,6 +16,10 @@
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
+
+    .welcome-text {
+      color: #4BB649; /* primaryColorVo */
+  }
    
     .btn-secondary {
         background-color: #4BB649; /* primaryColorVc: Color verde del botón */
@@ -42,7 +46,7 @@
             <div class="row">
               <div class="d-flex justify-content-center">
                 <div class="auth-header">
-                  <h2 class="mt-5"><b>Hola, Bienvenido</b></h2>
+                  <h2 class="mt-5 welcome-text"><b>Hola, Bienvenido</b></h2>
                   {% if error %}
                   <p style="color: red;">{{ error }}</p>
               {% endif %}
