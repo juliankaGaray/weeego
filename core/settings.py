@@ -24,6 +24,7 @@ ALLOWED_HOSTS = ['*']
 
 # Añadir tus hosts de despliegue aquí
 CSRF_TRUSTED_ORIGINS = [
+    'https://weeegoapp-btgcf0eccmh0a4h9.eastus-01.azurewebsites.net',
     'http://localhost:8000',
     'http://localhost:5085',
     'http://127.0.0.1:8000',
