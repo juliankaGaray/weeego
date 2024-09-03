@@ -4,6 +4,31 @@
 {% block title %} Login {% endblock title %}
 
 {% block content %}
+  <style>
+    body {
+        background-color: #D8E8C3; /* primaryColor: Fondo de la página */
+    }
+    .auth-main {
+        background-color: #D8E8C3; /* primaryColor: Fondo general de la sección de autenticación */
+    }
+    .card-body {
+        background-color: white; /* Fondo de la tarjeta */
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .btn-secondary {
+        background-color: #4BB649; /* primaryColorVc: Color verde del botón */
+        border-color: #4BB649;
+    }
+    .btn-secondary:hover {
+        background-color: #008E50; /* primaryColorVo: Un verde más oscuro para el hover */
+        border-color: #008E50;
+    }
+    .text-secondary {
+        color: #1F2736; /* primaryColorOs: Color del texto del encabezado */
+    }
+  </style>
+  
   <div class="auth-main">
     <div class="auth-wrapper v3">
       <div class="auth-form">
