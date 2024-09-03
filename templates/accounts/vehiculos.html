@@ -126,7 +126,7 @@ $(document).ready(function() {
             let vehiculos = response.vehiculos;
             let tableBody = $('#user-table tbody');
             vehiculos.forEach(function(vehiculo) {
-                let row = 
+                let row =` 
                     <tr>
                         <td>${vehiculo.id}</td>
                         <td>${vehiculo.placa}</td>
@@ -136,7 +136,7 @@ $(document).ready(function() {
                             <button class="btn btn-primary btn-edit" data-id="${vehiculo.id}">Editar</button>
                         </td>
                     </tr>
-                ;
+                `;
                 tableBody.append(row);
             });
 
