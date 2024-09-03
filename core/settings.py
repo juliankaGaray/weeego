@@ -18,7 +18,7 @@ if not SECRET_KEY:
     SECRET_KEY = ''.join(random.choice(string.ascii_lowercase) for i in range(32))
 
 # Modo de depuración
-DEBUG = str2bool(os.environ.get('DEBUG', 'False'))
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -125,7 +125,7 @@ WHITENOISE_MANIFEST_STRICT = False
 
 # Configuración de almacenamiento de archivos estáticos
 if not DEBUG:
-    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuración de campo clave primaria
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
