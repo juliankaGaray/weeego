@@ -466,18 +466,8 @@ def recolecciones(request):
 @login_required
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
-def recoleccion_detalle(request, recogida_id):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+def recoleccion_detalle(request, id):
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     if request.method == "GET":
@@ -492,23 +482,25 @@ inner join Vehículos vehi on rec.vehiculo_id = vehi.vehiculo_id
 inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
 
             WHERE recogida_id = ?
-        """, (recogida_id))
+        """, (id,))
         row = cursor.fetchone()
-        
+
         if row:
             recoleccion = {
-                'recogida_id': row[0],
-                'nombre': row[1],
-                'nombre': row[2],
-                'descripcion': row[3],
-                'placa': row[4],
-                'descripcion': row[5],
+                'id': row[0],
+                'cliente_id': row[1],
+                'empleado_id': row[2],
+                'ruta_id': row[3],
+                'vehiculo_id': row[4],
+                'tipo_basura_id': row[5],
                 'fecha': row[6],
                 'hora': row[7],
                 'cantidad': row[8],
             }
             cursor.close()
             conn.close()
+
+     
             return JsonResponse(recoleccion)
         else:
             cursor.close()
@@ -522,7 +514,7 @@ inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
                 UPDATE Recogidas
                 SET cliente_id=?, empleado_id=?, ruta_id=?, vehiculo_id=?, tipo_basura_id=?, fecha=?, hora=?, cantidad=?
                 WHERE recogida_id=?
-            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], recogida_id))
+            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], id))
             conn.commit()
 
             cursor.close()
@@ -533,7 +525,7 @@ inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
 
     elif request.method == "DELETE":
         try:
-            cursor.execute("DELETE FROM Recogidas WHERE recogida_id = ?", (recogida_id,))
+            cursor.execute("DELETE FROM Recogidas WHERE recogida_id = ?", (id,))
             conn.commit()
 
             cursor.close()
