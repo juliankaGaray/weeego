@@ -42,7 +42,7 @@ urlpatterns = [
     path('vehiculos/', vehiculos_detalle, name='vehiculos_detalle'),
     path('get/recolecciones/', recolecciones, name='recolecciones'),
     path('recolecciones_template/', recolecciones_template, name='recolecciones_template'),
-    path('get/recolecciones/<int:recogida_id>/', recoleccion_detalle, name='recoleccion_detalle'),
+    path('get/recolecciones/<int:id>/', recoleccion_detalle, name='recoleccion_detalle'),
 
     path('get/clientes/', clientes, name='clientes'),
     path('clientes_templete/', clientes_template, name='clientes_template'),
