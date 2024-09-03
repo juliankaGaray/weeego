@@ -220,7 +220,7 @@ $(document).ready(function() {
         };
 
         $.ajax({
-            url: /vehiculos/${vehiculoId}/,
+            url: `/vehiculos/${vehiculoId}/`,
             method: 'PUT',
             headers: {
                 'X-CSRFToken': csrftoken,
