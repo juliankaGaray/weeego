@@ -189,7 +189,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-edit', function() {
         let vehiculoId = $(this).data('id');
         $.ajax({
-            url: /vehiculos/${vehiculoId}/,
+            url: `/vehiculos/${vehiculoId}/`,
             method: 'GET',
             success: function(response) {
                 $('#editProductId').val(response.id);
@@ -239,7 +239,7 @@ $(document).ready(function() {
         let vehiculoId = $(this).data('id');
         if (confirm('¿Estás seguro de que deseas eliminar este vehículo?')) {
             $.ajax({
-                url: /vehiculos/${vehiculoId}/,
+                url: `/vehiculos/${vehiculoId}/`,
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': csrftoken },
                 success: function(response) {

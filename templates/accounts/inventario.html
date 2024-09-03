@@ -165,7 +165,7 @@ $(document).ready(function() {
     $(document).on('click', '.btn-edit', function() {
         let materialId = $(this).data('id');
         $.ajax({
-            url: /inventario/${materialId}/,
+            url: `/inventario/${materialId}/`,
             method: 'GET',
             success: function(response) {
                 $('#materialModalLabel').text('Editar Material');
@@ -221,7 +221,7 @@ $(document).ready(function() {
         let materialId = $(this).data('id');
         if (confirm('¿Estás seguro de que deseas eliminar este material?')) {
             $.ajax({
-                url: /inventario/${materialId}/,
+                url: `/inventario/${materialId}/`,
                 method: 'DELETE',
                 headers: { 'X-CSRFToken': csrftoken },
                 success: function(response) {
