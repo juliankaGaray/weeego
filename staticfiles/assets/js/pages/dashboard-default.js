@@ -125,7 +125,7 @@ function floatchart() {
       dataLabels: {
         enabled: false
       },
-      colors: ['#d3eafd', '#2196f3', '#673ab7', '#e1d8f1'],
+      colors: ['#d3eafd', '#2196f3', '#008e50', '#CEEBCE'],
       series: [
         {
           name: 'Investment',
@@ -180,7 +180,7 @@ function floatchart() {
           enabled: true
         }
       },
-      colors: ['#673ab7'],
+      colors: ['#008e50'],
       stroke: {
         curve: 'smooth',
         width: 1
