@@ -1,0 +1,56 @@
+{% load static %}
+
+<style>
+  .header {
+    display: flex;
+     /* Alinea verticalmente los elementos en el centro */
+}
+
+.logo-lg {
+    margin-right: 10px; 
+}
+</style>
+<!-- [ Header Topbar ] start -->
+<header class="pc-header">
+  <div class="m-header">
+    {% if request.user.is_superuser %}
+      <a href="{% url 'admin:index' %}" class="b-brand">
+    {% else %}
+      <a href="/" class="pc-link">
+    {% endif %}
+      <!-- ========   change your logo hear   ============ -->
+       
+      <div class="header text-center" >
+        <img src="{% static 'assets/images/logo.jpg' %}" alt="" class="logo logo-lg" width="125px"/>
+      
+    </div>
+          
+    </a>
+    <!-- ======= Menu collapse Icon ===== -->
+    <div class="pc-h-item">
+      <a href="#" class="pc-head-link head-link-secondary m-0" id="sidebar-hide">
+        <i class="ti ti-menu-2"></i>
+      </a>
+    </div>
+  </div>
+  <div class="header-wrapper"> 
+
+<!-- [Mobile Media Block end] -->
+<div class="ms-auto">
+  <ul class="list-unstyled">
+
+    <li class="pc-h-item">
+      <label class="pc-head-link head-link-secondary arrow-none me-0">
+        <input type="checkbox" id="p_dark_mode" class="d-none">
+        <i class="ti ti-sun" id="p_mode_icon"></i>
+      </label>
+    </li>
+
+
+
+   
+  </ul>
+</div>
+ </div>
+</header>
+<!-- [ Header ] end -->
