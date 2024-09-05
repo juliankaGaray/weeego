@@ -1,3 +1,4 @@
+
 /**======================================================================
 =========================================================================
 Template Name: DashboardKit - Most Complete Bootstrap Admin Template
@@ -58,13 +59,13 @@ File: style.css
 
 [data-pc-theme=dark] .badge.bg-light-secondary {
   background: rgba(102, 16, 242, 0.2);
-  color: #008e50;
+  color: #6610f2;
   border-color: rgba(102, 16, 242, 0.2);
 }
 
 [data-pc-theme=dark] .icon-svg-secondary {
   fill: rgba(102, 16, 242, 0.2);
-  stroke: #008e50;
+  stroke: #6610f2;
 }
 
 [data-pc-theme=dark] .bg-light-secondary {
@@ -82,13 +83,13 @@ File: style.css
 }
 
 [data-pc-theme=dark] .alert-secondary {
-  color: #008e50;
+  color: #6610f2;
   background: rgba(102, 16, 242, 0.2);
   border-color: rgba(102, 16, 242, 0.2);
 }
 
 [data-pc-theme=dark] .alert-secondary .alert-link {
-  color: #008e50;
+  color: #6610f2;
 }
 
 [data-pc-theme=dark] .form-check .form-check-input.input-light-secondary:checked {
@@ -146,13 +147,13 @@ File: style.css
 
 [data-pc-theme=dark] .badge.bg-light-info {
   background: rgba(62, 201, 214, 0.2);
-  color: #ceebce;
+  color: #3ec9d6;
   border-color: rgba(62, 201, 214, 0.2);
 }
 
 [data-pc-theme=dark] .icon-svg-info {
   fill: rgba(62, 201, 214, 0.2);
-  stroke: #ceebce;
+  stroke: #3ec9d6;
 }
 
 [data-pc-theme=dark] .bg-light-info {
@@ -170,13 +171,13 @@ File: style.css
 }
 
 [data-pc-theme=dark] .alert-info {
-  color: #ceebce;
+  color: #3ec9d6;
   background: rgba(62, 201, 214, 0.2);
   border-color: rgba(62, 201, 214, 0.2);
 }
 
 [data-pc-theme=dark] .alert-info .alert-link {
-  color: #ceebce;
+  color: #3ec9d6;
 }
 
 [data-pc-theme=dark] .form-check .form-check-input.input-light-info:checked {
