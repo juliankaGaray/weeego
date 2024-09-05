@@ -475,6 +475,9 @@ def recolecciones(request):
 
 
     return HttpResponseBadRequest()
+
+
+
 @login_required
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
@@ -828,6 +831,16 @@ def cotizacion_detalle(request, cotizacion_id=None):
             if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
+            
+            connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+             )
+            
             conn = pyodbc.connect(connection_string)
             cursor = conn.cursor()
 
@@ -877,6 +890,16 @@ def cotizacion_detalle(request, cotizacion_id=None):
 
         if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
             return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
+        
+        
+        connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
 
         conn = pyodbc.connect(connection_string)
         cursor = conn.cursor()
@@ -923,6 +946,21 @@ def cotizacion_detalle(request, cotizacion_id=None):
         conn.close()
 
         return JsonResponse({'success': True})
+    
+
+    elif request.method == "DELETE" and cotizacion_id:
+        try:
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    return HttpResponseBadRequest()
 
 
 
