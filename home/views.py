@@ -381,7 +381,18 @@ def vehiculos_detalle(request, vehiculo_id=None):
 @login_required
 @csrf_exempt
 def recolecciones(request):
-    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+    
+    
+    connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+    
+    conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
 
     if request.method == "GET":
@@ -468,7 +479,17 @@ def recolecciones(request):
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
 def recoleccion_detalle(request, id):
-    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+    
+    
+    connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+    conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
 
     if request.method == "GET":
@@ -671,7 +692,17 @@ def clientes_detalle(request, cliente_id=None):
     return HttpResponseBadRequest()
 
 def cotizaciones(request):
-    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+
+    connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+    
+    conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
     cursor.execute("""    SELECT co.cotizacion_id, emp.nombre, cli.nombre,co.fecha,co.total,co.estado, tip.descripcion,cruce_costos, inv.descripcion,co.cantidad from Cotizaciones as co inner join Clientes cli on cli.cliente_id = co.cliente_id
 inner join Empleados emp on emp.empleado_id = co.empleado_id
@@ -702,7 +733,16 @@ inner join inventarioMateriales inv on co.material_id = inv.MaterialID""")
 
 
 def obtener_datos_formulario():
-    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+    
+    connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+    conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
     
     cursor.execute("SELECT cliente_id, nombre FROM Clientes")
@@ -735,7 +775,17 @@ def obtener_datos_formulario():
 @require_http_methods(["GET", "POST", "PUT", "DELETE"])
 def cotizacion_detalle(request, cotizacion_id=None):
     if request.method == "GET" and cotizacion_id:
-        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+        
+        
+        connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+        conn = pyodbc.connect(connection_string)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
         row = cursor.fetchone()
@@ -778,7 +828,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+            conn = pyodbc.connect(connection_string)
             cursor = conn.cursor()
 
             cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id,))
@@ -828,7 +878,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
         if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
             return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+        conn = pyodbc.connect(connection_string)
         cursor = conn.cursor()
 
         # Obtener la cantidad anterior de la cotización
