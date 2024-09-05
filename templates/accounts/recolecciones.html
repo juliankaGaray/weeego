@@ -13,7 +13,7 @@
                     </div>
                     <div class="row m-4">
                         <div class="col">
-                            <button type="button" class="btn btn-success" id="createProductButton">Crear Recoleccion</button>
+                            <button type="button" class="btn btn-success" id="createProductButton">Crear Recolección</button>
                         </div>
                     </div>
                     <table class="table table-striped table-bordered" id="user-table">
@@ -28,6 +28,7 @@
                                 <th>Fecha</th>
                                 <th>Hora</th>
                                 <th>Cantidad</th>
+                                <th>Material</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -45,9 +46,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editProductModalLabel">Editar Recolección</h5>
-                <button type="button" class="btn-close" aria-label="Close"></button>
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="editProductForm">
@@ -74,6 +73,16 @@
                         <select class="form-control" id="editProductTipoBasura" name="tipo_basura_id"></select>
                     </div>
                     <div class="form-group">
+                        <label for="editProductMaterial">Material</label>
+                        <select class="form-control" id="editProductMaterial" name="material_id"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editProductCantidad">Cantidad Recogida</label>
+                        <input type="number" class="form-control" id="editProductCantidad" name="cantidad">
+                    </div>
+                 
+                    <div class="form-group">
                         <label for="editProductFecha">Fecha</label>
                         <input type="date" class="form-control" id="editProductFecha" name="fecha">
                     </div>
@@ -81,14 +90,10 @@
                         <label for="editProductHora">Hora</label>
                         <input type="time" class="form-control" id="editProductHora" name="hora">
                     </div>
-                    <div class="form-group">
-                        <label for="editProductCantidad">Cantidad</label>
-                        <input type="number" class="form-control" id="editProductCantidad" name="cantidad">
-                    </div>
+                  
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary close" data-dismiss="modal">Cerrar</button>
                 <button type="button" class="btn btn-primary" id="saveEditProduct">Guardar Cambios</button>
             </div>
         </div>
@@ -101,9 +106,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Crear Recolección</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="createProductForm">
@@ -128,6 +131,16 @@
                         <select class="form-control" id="createProductTipoBasura" name="tipo_basura_id"></select>
                     </div>
                     <div class="form-group">
+                        <label for="createProductMaterial">Material</label>
+                        <select class="form-control" id="createProductMaterial" name="material_id"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="createProductCantidad">Cantidad Recogida</label>
+                        <input type="number" class="form-control" id="createProductCantidad" name="cantidad">
+                    </div>
+              
+                    <div class="form-group">
                         <label for="createProductFecha">Fecha</label>
                         <input type="date" class="form-control" id="createProductFecha" name="fecha">
                     </div>
@@ -135,15 +148,11 @@
                         <label for="createProductHora">Hora</label>
                         <input type="time" class="form-control" id="createProductHora" name="hora">
                     </div>
-                    <div class="form-group">
-                        <label for="createProductCantidad">Cantidad</label>
-                        <input type="number" class="form-control" id="createProductCantidad" name="cantidad">
-                    </div>
+                  
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="saveCreateProduct">Guardar</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -187,9 +196,10 @@ $(document).ready(function() {
                         <td>${recoleccion.Fecha}</td>
                         <td>${recoleccion.Hora}</td>
                         <td>${recoleccion.Cantidad}</td>
+                        <td>${recoleccion.Material}</td>
+
                         <td>
                             <button class="btn btn-primary btn-edit" data-id="${recoleccion.id}">Editar</button>
-                            <button class="btn btn-danger btn-delete" data-id="${recoleccion.id}">Eliminar</button>
                         </td>
                     </tr>
                 `;
@@ -198,9 +208,9 @@ $(document).ready(function() {
 
             $('#user-table').DataTable();
 
-                response.clientes.forEach(function(cliente) {
-                    $('#createProductCliente, #editProductCliente').append(`<option value="${cliente.id}">${cliente.nombre}</option>`);
-                });
+            response.clientes.forEach(function(cliente) {
+                $('#createProductCliente, #editProductCliente').append(`<option value="${cliente.id}">${cliente.nombre}</option>`);
+            });
             response.empleados.forEach(function(empleado) {
                 $('#createProductEmpleado, #editProductEmpleado').append(`<option value="${empleado.id}">${empleado.nombre}</option>`);
             });
@@ -213,6 +223,9 @@ $(document).ready(function() {
             response.tipos_basura.forEach(function(tipo) {
                 $('#createProductTipoBasura, #editProductTipoBasura').append(`<option value="${tipo.id}">${tipo.descripcion}</option>`);
             });
+            response.inventarios.forEach(function(inventarios) {
+                $('#createProductMaterial, #editProductMaterial').append(`<option value="${inventarios.id}" data-cantidad="${inventarios.cantidad_disponible}">${inventarios.nombre}</option>`);
+            });
         }
     });
 
@@ -220,7 +233,7 @@ $(document).ready(function() {
         $('#createProductModal').modal('show');
     });
 
-
+    // Guardar nueva recolección
     $('#saveCreateProduct').click(function() {
         const newRecoleccion = {
             cliente_id: $('#createProductCliente').val(),
@@ -228,10 +241,18 @@ $(document).ready(function() {
             ruta_id: $('#createProductRuta').val(),
             vehiculo_id: $('#createProductVehiculo').val(),
             tipo_basura_id: $('#createProductTipoBasura').val(),
+            material_id: $('#createProductMaterial').val(),
             fecha: $('#createProductFecha').val(),
             hora: $('#createProductHora').val(),
             cantidad: $('#createProductCantidad').val(),
         };
+
+        if (!newRecoleccion.cliente_id || !newRecoleccion.empleado_id || !newRecoleccion.ruta_id ||
+            !newRecoleccion.vehiculo_id || !newRecoleccion.tipo_basura_id || !newRecoleccion.fecha ||
+            !newRecoleccion.hora || !newRecoleccion.cantidad) {
+            alert('Por favor, complete todos los campos.');
+            return;
+        }
 
         $.ajax({
             url: '/get/recolecciones/',
@@ -243,7 +264,7 @@ $(document).ready(function() {
             },
             success: function() {
                 $('#createProductModal').modal('hide');
-                location.reload();  // Refresh the page
+                location.reload();
             }
         });
     });
@@ -255,26 +276,25 @@ $(document).ready(function() {
             url: `/get/recolecciones/${id}/`,
             method: 'GET',
             success: function(response) {
-
-          
+            
                 $('#editProductId').val(response.id);
                 $('#editProductCliente').val(response.cliente_id);
-                console.log(response.cliente_id);
                 $('#editProductEmpleado').val(response.empleado_id);
                 $('#editProductRuta').val(response.ruta_id);
                 $('#editProductVehiculo').val(response.vehiculo_id);
                 $('#editProductTipoBasura').val(response.tipo_basura_id);
+                $('#editProductMaterial').val(response.material_id);
                 $('#editProductFecha').val(response.fecha);
                 $('#editProductHora').val(response.hora);
                 $('#editProductCantidad').val(response.cantidad);
+                $('#editProductCantidadDisponible').val(response.cantidad_disponible);
 
-                
                 $('#editProductModal').modal('show');
             }
         });
     });
 
-    // Handle save edit button click
+    // Guardar cambios de edición
     $('#saveEditProduct').click(function() {
         const updatedRecoleccion = {
             cliente_id: $('#editProductCliente').val(),
@@ -282,12 +302,20 @@ $(document).ready(function() {
             ruta_id: $('#editProductRuta').val(),
             vehiculo_id: $('#editProductVehiculo').val(),
             tipo_basura_id: $('#editProductTipoBasura').val(),
+            material_id: $('#editProductMaterial').val(),
             fecha: $('#editProductFecha').val(),
             hora: $('#editProductHora').val(),
             cantidad: $('#editProductCantidad').val(),
         };
 
         const id = $('#editProductId').val();
+
+        if (!updatedRecoleccion.cliente_id || !updatedRecoleccion.empleado_id || !updatedRecoleccion.ruta_id ||
+            !updatedRecoleccion.vehiculo_id || !updatedRecoleccion.tipo_basura_id || !updatedRecoleccion.fecha ||
+            !updatedRecoleccion.hora || !updatedRecoleccion.cantidad) {
+            alert('Por favor, complete todos los campos.');
+            return;
+        }
 
         $.ajax({
             url: `/get/recolecciones/${id}/`,
@@ -299,11 +327,10 @@ $(document).ready(function() {
             },
             success: function() {
                 $('#editProductModal').modal('hide');
-                location.reload();  // Refresh the page
+                location.reload();
             }
         });
     });
-
 
     // Handle delete button click
     $(document).on('click', '.btn-delete', function() {
@@ -316,9 +343,16 @@ $(document).ready(function() {
                 xhr.setRequestHeader('X-CSRFToken', csrftoken);
             },
             success: function() {
-                location.reload();  // Refresh the page
+                location.reload();
             }
         });
+    });
+
+    // Handle material selection and update available quantity
+    $('#createProductMaterial, #editProductMaterial').change(function() {
+        const selectedMaterial = $(this).find('option:selected');
+        const cantidadDisponible = selectedMaterial.data('cantidad');
+        $('#createProductCantidadDisponible, #editProductCantidadDisponible').val(cantidadDisponible);
     });
 });
 </script>

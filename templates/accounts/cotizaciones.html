@@ -59,9 +59,8 @@
                     
                     <div class="form-group">
                         <label for="clienteId">Cliente</label>
-                        <select class="form-control" id="clienteId" name="cliente_id" required>
-                            <option value="">Seleccione un tipo de cotización</option>
-                        </select>
+                        <select class="form-control" id="clienteId" name="cliente_id" required></select>
+                        <option value="">Seleccione un tipo de cotización</option>
                     </div>
 
                     <div class="form-group">
@@ -184,7 +183,7 @@ $(document).ready(function() {
         }
     });
 
-    // Obtener clientes, empleados, materiales y tipos de cotización para los formularios
+    // Obtener datos para los formularios
     $.ajax({
         url: '/obtener_formulario_datos/',
         method: 'GET',
@@ -220,6 +219,7 @@ $(document).ready(function() {
         }
     });
 
+    // Actualizar la cantidad disponible cuando se selecciona un material
     $('#materialId').change(function() {
         let selectedMaterial = $(this).find('option:selected');
         let cantidadDisponible = selectedMaterial.data('cantidad');
@@ -234,6 +234,7 @@ $(document).ready(function() {
         $('#cotizacionModal').modal('show');
     });
 
+    // Editar cotización
     $(document).on('click', '.btn-edit', function() {
         let cotizacionId = $(this).data('id');
         $.ajax({
@@ -244,7 +245,7 @@ $(document).ready(function() {
                 $('#cotizacionId').val(response.id);
                 $('#clienteId').val(response.cliente_id);
                 $('#empleadoId').val(response.empleado_id);
-                $('#materialId').val(response.material_id);
+                $('#materialId').val(response.material_id).trigger('change');
                 $('#cantidadSolicitada').val(response.cantidad);
                 $('#tipoCotizacionId').val(response.tipo_cotizacion_id);
                 $('#fecha').val(response.fecha);
@@ -256,6 +257,7 @@ $(document).ready(function() {
         });
     });
 
+    // Calcular cruce de costos
     $('#total, #tipoCotizacionId').on('input change', function() {
         let total = parseFloat($('#total').val()) || 0;
         let tipoCotizacionId = parseInt($('#tipoCotizacionId').val()) || 0;
@@ -269,6 +271,8 @@ $(document).ready(function() {
 
         $('#cruceCostos').val(cruceCostos.toFixed(2));
     });
+
+    // Validar y guardar cotización
     $('#saveCotizacion').click(function() {
         let formValid = true;
         $('#cotizacionForm select, #cotizacionForm input').each(function() {
@@ -281,6 +285,18 @@ $(document).ready(function() {
                 }
             }
         });
+
+        // Validar cantidad solicitada contra la cantidad disponible
+        let cantidadDisponible = parseFloat($('#cantidadDisponible').val());
+        let cantidadSolicitada = parseFloat($('#cantidadSolicitada').val());
+
+        if (cantidadSolicitada > cantidadDisponible) {
+            alert('La cantidad solicitada excede la cantidad disponible.');
+            $('#cantidadSolicitada').addClass('is-invalid');
+            formValid = false;
+        } else {
+            $('#cantidadSolicitada').removeClass('is-invalid');
+        }
 
         if (!formValid) {
             alert('Por favor, complete todos los campos obligatorios.');
@@ -321,6 +337,7 @@ $(document).ready(function() {
         });
     });
 
+    // Eliminar cotización
     $(document).on('click', '.btn-delete', function() {
         let cotizacionId = $(this).data('id');
         if (confirm('¿Estás seguro de que deseas eliminar esta cotización?')) {
@@ -335,5 +352,6 @@ $(document).ready(function() {
         }
     });
 });
+
 </script>
 {% endblock %}

@@ -380,31 +380,21 @@ def vehiculos_detalle(request, vehiculo_id=None):
 
 @login_required
 @csrf_exempt
-@require_http_methods(["GET", "POST", "PUT", "DELETE"])
 def recolecciones(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
 
     if request.method == "GET":
         # Fetch all recolecciones
         cursor.execute("""
-            SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa, tip.descripcion, rec.fecha, rec.hora, rec.cantidad
+            SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa, tip.descripcion, rec.fecha, rec.hora, rec.cantidad, INV.NombreMaterial
             FROM Recogidas rec
             INNER JOIN Clientes CLI ON CLI.cliente_id = rec.cliente_id
             INNER JOIN Empleados emp ON emp.empleado_id = rec.empleado_id
             INNER JOIN Rutas rut ON rec.ruta_id = rut.ruta_id
             INNER JOIN Vehículos vehi ON rec.vehiculo_id = vehi.vehiculo_id
             INNER JOIN Tipos_de_Basura tip ON rec.tipo_basura_id = tip.tipo_basura_id
+            inner join InventarioMateriales inv on rec.MATERIAL_ID = INV.MATERIALID
         """)
         rows = cursor.fetchall()
 
@@ -420,6 +410,7 @@ def recolecciones(request):
                 'Fecha': row[6],
                 'Hora': row[7],
                 'Cantidad': row[8],
+                'Material' : row[9]
             })
 
         # Fetch selection data
@@ -433,6 +424,8 @@ def recolecciones(request):
         vehiculos = cursor.fetchall()
         cursor.execute("SELECT tipo_basura_id, descripcion FROM Tipos_de_Basura")
         tipos_basura = cursor.fetchall()
+        cursor.execute("SELECT MaterialID, NombreMaterial, CantidadDisponible FROM InventarioMateriales")
+        inventarios = cursor.fetchall()
 
         cursor.close()
         conn.close()
@@ -444,25 +437,33 @@ def recolecciones(request):
             'rutas': [{'id': r[0], 'descripcion': r[1]} for r in rutas],
             'vehiculos': [{'id': v[0], 'placa': v[1]} for v in vehiculos],
             'tipos_basura': [{'id': t[0], 'descripcion': t[1]} for t in tipos_basura],
+            'inventarios': [{'id': i[0], 'nombre': i[1], 'cantidad_disponible': i[2]} for i in inventarios],  # Añadido el inventario
         })
 
     elif request.method == "POST":
-        try:
+        
             data = json.loads(request.body.decode('utf-8'))
+            
+            # Insertar la recolección en la base de datos
             cursor.execute("""
-                INSERT INTO Recogidas (cliente_id, empleado_id, ruta_id, vehiculo_id, tipo_basura_id, fecha, hora, cantidad)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad']))
-            conn.commit()
+                INSERT INTO Recogidas (cliente_id, empleado_id, ruta_id, vehiculo_id, tipo_basura_id, fecha, hora, cantidad, material_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['material_id']))
+            
+            # Actualizar la cantidad del material en el inventario
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['material_id'],))
+            row = cursor.fetchone()
+            if row:
+                nueva_cantidad = row[0] + int(data['cantidad'])  # Sumar la cantidad recogida al inventario
+                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['material_id']))
 
+            conn.commit()
             cursor.close()
             conn.close()
             return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+
 
     return HttpResponseBadRequest()
-
 @login_required
 @csrf_exempt
 @require_http_methods(["GET", "PUT", "DELETE"])
@@ -473,14 +474,13 @@ def recoleccion_detalle(request, id):
     if request.method == "GET":
         # Fetch a specific recoleccion
         cursor.execute("""
-SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa,tip.descripcion,rec.fecha,rec.hora,rec.cantidad
-
-FROM Recogidas rec INNER JOIN Clientes CLI ON CLI.cliente_id = rec.cliente_id
-inner join Empleados emp on emp.empleado_id = rec.empleado_id
-inner join Rutas rut on rec.ruta_id = rut.ruta_id
-inner join Vehículos vehi on rec.vehiculo_id = vehi.vehiculo_id
-inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
-
+            SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa, tip.descripcion, rec.fecha, rec.hora, rec.cantidad, rec.material_id
+            FROM Recogidas rec
+            INNER JOIN Clientes CLI ON CLI.cliente_id = rec.cliente_id
+            INNER JOIN Empleados emp ON emp.empleado_id = rec.empleado_id
+            INNER JOIN Rutas rut ON rec.ruta_id = rut.ruta_id
+            INNER JOIN Vehículos vehi ON rec.vehiculo_id = vehi.vehiculo_id
+            INNER JOIN Tipos_de_Basura tip ON rec.tipo_basura_id = tip.tipo_basura_id
             WHERE recogida_id = ?
         """, (id,))
         row = cursor.fetchone()
@@ -496,30 +496,50 @@ inner join Tipos_de_Basura tip on rec.tipo_basura_id = tip.tipo_basura_id
                 'fecha': row[6],
                 'hora': row[7],
                 'cantidad': row[8],
+                'material_id': row[9]
             }
             cursor.close()
             conn.close()
-
-     
             return JsonResponse(recoleccion)
         else:
             cursor.close()
             conn.close()
-            return JsonResponse({'error': 'Recoleccion not found'}, status=404)
+            return JsonResponse({'error': 'Recolección no encontrada'}, status=404)
 
     elif request.method == "PUT":
         try:
             data = json.loads(request.body.decode('utf-8'))
+
+            cursor.execute("SELECT cantidad, material_id FROM Recogidas WHERE recogida_id=?", (id,))
+            original_recoleccion = cursor.fetchone()
+
+            if original_recoleccion:
+                cantidad_original = original_recoleccion[0]
+                material_id_original = original_recoleccion[1]
+
+                cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id_original,))
+                row = cursor.fetchone()
+                if row:
+                    nueva_cantidad = row[0] - cantidad_original  
+                    cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, material_id_original))
+
             cursor.execute("""
                 UPDATE Recogidas
-                SET cliente_id=?, empleado_id=?, ruta_id=?, vehiculo_id=?, tipo_basura_id=?, fecha=?, hora=?, cantidad=?
+                SET cliente_id=?, empleado_id=?, ruta_id=?, vehiculo_id=?, tipo_basura_id=?, fecha=?, hora=?, cantidad=?, material_id=?
                 WHERE recogida_id=?
-            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], id))
-            conn.commit()
+            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['material_id'], id))
+            
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['material_id'],))
+            row = cursor.fetchone()
+            if row:
+                nueva_cantidad = row[0] + data['cantidad']  
+                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['material_id']))
 
+            conn.commit()
             cursor.close()
             conn.close()
             return JsonResponse({'success': True})
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
@@ -651,17 +671,7 @@ def clientes_detalle(request, cliente_id=None):
     return HttpResponseBadRequest()
 
 def cotizaciones(request):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
-    conn = pyodbc.connect(connection_string)
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
     cursor.execute("""    SELECT co.cotizacion_id, emp.nombre, cli.nombre,co.fecha,co.total,co.estado, tip.descripcion,cruce_costos, inv.descripcion,co.cantidad from Cotizaciones as co inner join Clientes cli on cli.cliente_id = co.cliente_id
 inner join Empleados emp on emp.empleado_id = co.empleado_id
@@ -690,18 +700,9 @@ inner join inventarioMateriales inv on co.material_id = inv.MaterialID""")
     return JsonResponse({'cotizaciones': cotizaciones})
 
 
-def obtener_datos_formulario():
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
 
-    conn = pyodbc.connect(connection_string)
+def obtener_datos_formulario():
+    conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
     cursor = conn.cursor()
     
     cursor.execute("SELECT cliente_id, nombre FROM Clientes")
@@ -727,22 +728,14 @@ def obtener_datos_formulario():
     return {'clientes': clientes_list, 'empleados': empleados_list, 'tipos_cotizacion': tipos_cotizacion_list, 'inventario_list': inventario_list}
 
 
+
+
 @login_required
 @csrf_exempt
 @require_http_methods(["GET", "POST", "PUT", "DELETE"])
 def cotizacion_detalle(request, cotizacion_id=None):
-    # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-    connection_string = (
-        f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-        f"SERVER={settings.DATABASES['default']['HOST']};"
-        f"DATABASE={settings.DATABASES['default']['NAME']};"
-        f"UID={settings.DATABASES['default']['USER']};"
-        f"PWD={settings.DATABASES['default']['PASSWORD']};"
-        f"TrustServerCertificate=yes;"
-    )
-
     if request.method == "GET" and cotizacion_id:
-        conn = pyodbc.connect(connection_string)
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
         row = cursor.fetchone()
@@ -769,12 +762,13 @@ def cotizacion_detalle(request, cotizacion_id=None):
             return JsonResponse({'error': 'Cotización no encontrada'}, status=404)
 
     elif request.method == "POST":
-        try:
+
+        
             data = json.loads(request.body.decode('utf-8'))
             cliente_id = data.get('cliente_id')
             empleado_id = data.get('empleado_id')
             material_id = data.get('material_id')
-            cantidad_solicitada = data.get('cantidad_solicitada')
+            cantidad_solicitada = int(data.get('cantidad_solicitada'))
             fecha = data.get('fecha')
             total = data.get('total')
             estado = data.get('estado')
@@ -784,62 +778,104 @@ def cotizacion_detalle(request, cotizacion_id=None):
             if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
+            conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
             cursor = conn.cursor()
+
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id,))
+            row = cursor.fetchone()
+
+            if row is None:
+                cursor.close()
+                conn.close()
+                return JsonResponse({'error': 'Material no encontrado'}, status=404)
+
+            cantidad_disponible = row[0]
+
+            if cantidad_disponible < cantidad_solicitada:
+                print("cantidad superada")
+                cursor.close()
+                conn.close()
+                return JsonResponse({'error': 'Cantidad solicitada excede el inventario disponible'}, status=400)
+
+            
+            nueva_cantidad = cantidad_disponible - cantidad_solicitada
+            cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, material_id))
+
+           
             cursor.execute("""
                 INSERT INTO Cotizaciones (cliente_id, empleado_id, material_id, cantidad, fecha, total, estado, tipo_cotizacion_id, cruce_costos)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos))
+
             conn.commit()
             cursor.close()
             conn.close()
             return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
+        
     elif request.method == "PUT" and cotizacion_id:
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-            cliente_id = data.get('cliente_id')
-            empleado_id = data.get('empleado_id')
-            material_id = data.get('material_id')
-            cantidad_solicitada = data.get('cantidad_solicitada')
-            fecha = data.get('fecha')
-            total = data.get('total')
-            estado = data.get('estado')
-            tipo_cotizacion_id = data.get('tipo_cotizacion_id')
-            cruce_costos = data.get('cruce_costos')
+    
+        data = json.loads(request.body.decode('utf-8'))
+        cliente_id = data.get('cliente_id')
+        empleado_id = data.get('empleado_id')
+        material_id = data.get('material_id')
+        cantidad_solicitada = int(data.get('cantidad_solicitada'))  # Convertir a entero
+        fecha = data.get('fecha')
+        total = data.get('total')
+        estado = data.get('estado')
+        tipo_cotizacion_id = data.get('tipo_cotizacion_id')
+        cruce_costos = data.get('cruce_costos')
 
-            if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
-                return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
+        if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
+            return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
-            conn = pyodbc.connect(connection_string)
-            cursor = conn.cursor()
-            cursor.execute("""
-                UPDATE Cotizaciones
-                SET cliente_id=?, empleado_id=?, material_id=?, cantidad=?, fecha=?, total=?, estado=?, tipo_cotizacion_id=?, cruce_costos=?
-                WHERE cotizacion_id=?
-            """, (cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos, cotizacion_id))
-            conn.commit()
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+        cursor = conn.cursor()
+
+        # Obtener la cantidad anterior de la cotización
+        cursor.execute("SELECT cantidad FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
+        row = cursor.fetchone()
+
+        if row is None:
             cursor.close()
             conn.close()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Cotización no encontrada'}, status=404)
 
-    elif request.method == "DELETE" and cotizacion_id:
-        try:
-            conn = pyodbc.connect(connection_string)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM Cotizaciones WHERE cotizacion_id=?", (cotizacion_id,))
-            conn.commit()
+        cantidad_original = int(row[0])
+
+        cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id,))
+        row = cursor.fetchone()
+
+        if row is None:
             cursor.close()
             conn.close()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
+            return JsonResponse({'error': 'Material no encontrado'}, status=404)
 
-    return HttpResponseBadRequest()
+        cantidad_disponible = int(row[0])
+
+        nueva_cantidad_disponible = cantidad_disponible + cantidad_original
+
+        if nueva_cantidad_disponible < cantidad_solicitada:
+            cursor.close()
+            conn.close()
+            return JsonResponse({'error': 'Cantidad solicitada excede el inventario disponible'}, status=400)
+
+        cantidad_final = nueva_cantidad_disponible - cantidad_solicitada
+        cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (cantidad_final, material_id))
+
+        cursor.execute("""
+            UPDATE Cotizaciones
+            SET cliente_id=?, empleado_id=?, material_id=?, cantidad=?, fecha=?, total=?, estado=?, tipo_cotizacion_id=?, cruce_costos=?
+            WHERE cotizacion_id=?
+        """, (cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos, cotizacion_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return JsonResponse({'success': True})
+
+
+
 
 
 def calcular_cruce_costos(tipo_cotizacion_id, total):
