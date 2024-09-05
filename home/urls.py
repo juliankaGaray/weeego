@@ -2,6 +2,8 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
+# funciona gonorreaaaa
+
 from .views import (
     productos,
     index,
