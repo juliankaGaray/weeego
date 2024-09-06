@@ -23,7 +23,8 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse, HttpResponseBadRequest
 
 # Create your views here.
-
+def home(request):
+    return render(request, 'home.html')
 @login_required
 def index(request): 
     rol = request.session.get('rol', '')
@@ -135,14 +136,8 @@ def registro(request):
         hashed_password = make_password(password)
 
         # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-        connection_string = (
-            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
-            f"SERVER={settings.DATABASES['default']['HOST']};"
-            f"DATABASE={settings.DATABASES['default']['NAME']};"
-            f"UID={settings.DATABASES['default']['USER']};"
-            f"PWD={settings.DATABASES['default']['PASSWORD']};"
-            f"TrustServerCertificate=yes;"
-        )
+        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
+        cursor = conn.cursor()
      
         conn = pyodbc.connect(connection_string)
         cursor = conn.cursor()

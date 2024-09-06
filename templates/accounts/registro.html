@@ -1,32 +1,133 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weeego - Página de Inicio</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos personalizados */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #F2F9F4; /* primaryColor */
+            color: #008e50; /* primaryColorOs */
+        }
+
+        header {
+            background-color: #F2F9F4;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header img {
+            width: 100px;
+        }
+
+        .btn-primary {
+            background-color: #008E50; /* primaryColorVo */
+            border-color: #008E50;
+        }
+
+        .btn-primary:hover {
+            background-color: #4BB649; /* primaryColorVc */
+            border-color: #4BB649;
+        }
+
+        .btn-secondary {
+            background-color: #4BB649; /* primaryColorVc */
+            border-color: #4BB649;
+        }
+
+        .btn-secondary:hover {
+            background-color: #008E50; /* primaryColorVo */
+            border-color: #008E50;
+        }
+
+        .login-button {
+            border: 2px solid #008E50;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #008E50;
+            text-decoration: none;
+        }
+
+        .login-button:hover {
+            background-color: #008E50;
+            color: #FFFFFF;
+        }
+
+        /* Centrar el formulario y darle estilo */
+        form {
+            margin: 50px auto;
+            padding: 20px;
+            width: 50%;
+            border: 2px solid #008E50; /* Color del borde */
+            border-radius: 10px;
+            background-color: #fff;
+            text-align: left; /* Justificado */
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        form input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #008E50; /* Botón verde */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        form button:hover {
+            background-color: #4BB649;
+        }
+    </style>
 </head>
 <body>
-    <h2>Register</h2>
+    <header>
+        <img src="{% static 'assets/images/image.png' %}" alt="Logo Weeego">
+        <a href="{% url 'home' %}" class="login-button">Volver a inicio</a>
+    </header>
+    <h1 class="text-center">Registro</h1>
     <form method="POST">
         {% csrf_token %}
 
-        <label for="usuario">Nombre usuario:</label>
-        <input type="text" name="usuario" id="usuario" required><br>
+        <label for="usuario">Nombre de usuario:</label>
+        <input type="text" name="usuario" id="usuario" required>
 
         <label for="clave">Contraseña:</label>
-        <input type="password" name="clave" id="clave" required><br>
+        <input type="password" name="clave" id="clave" required>
 
         <label for="nombre">Nombre Completo:</label>
-        <input type="text" name="nombre" id="nombre" required><br>
+        <input type="text" name="nombre" id="nombre" required>
 
         <label for="rol">Rol:</label>
-        <input type="text" name="rol" id="rol" required><br>
+        <input type="text" name="rol" id="rol" required>
 
-        <label for="email">Email:</label>
-        <input type="text" name="email" id="email" required><br>
-       
-        <label for="fecha">Fecha de creacion:</label>
-        <input type="date" name="fecha" id="fecha" required><br>
-        <button type="submit">Register</button>
+        <label for="email">Correo electrónico:</label>
+        <input type="email" name="email" id="email" required>
+
+        <label for="fecha">Fecha de creación:</label>
+        <input type="date" name="fecha" id="fecha" required>
+
+        <button type="submit">Registrar</button>
     </form>
 </body>
 </html>

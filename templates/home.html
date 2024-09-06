@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weeego - Página de Inicio</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Estilos personalizados */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #C4CCC5; /* primaryColor */
+            color: #008e50; /* primaryColorOs */
+        }
+
+        header {
+            background-color: #F2F9F4;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header img {
+            width: 100px;
+        }
+
+
+        .btn-primary {
+            background-color: #008E50; /* primaryColorVo */
+            border-color: #008E50; 
+        }
+
+        .btn-primary:hover {
+            background-color: #4BB649; /* primaryColorVc */
+            border-color: #4BB649;
+        }
+
+        .btn-secondary {
+            background-color: #4BB649; /* primaryColorVc */
+            border-color: #4BB649;
+        }
+
+        .btn-secondary:hover {
+            background-color: #008E50; /* primaryColorVo */
+            border-color: #008E50;
+        }
+
+        .login-button {
+            border: 2px solid #008E50;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #008E50;
+            text-decoration: none;
+        }
+
+        .login-button:hover {
+            background-color: #008E50;
+            color: #FFFFFF;
+        }
+
+        .hero {
+            position: relative;
+            text-align: center;
+            color: #fff;
+        }
+
+        .carousel-item {
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+        }
+
+        .hero-content h1 {
+            font-size: 48px;
+            margin: 0;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .cta-button {
+            background-color: #4BB649; /* primaryColorVc */
+            color: #FFFFFF;
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 16px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            background-color: #008E50; /* primaryColorVo */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{% static 'assets/images/image.png' %}" alt="Logo Weeego">
+        <a href="{% url 'registro' %}" class="login-button">Registrar empleado</a>
+    </header>
+
+    <!-- Slider dinámico en Hero -->
+    <main class="hero">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active" style="background-image: url('{% static 'assets/images/slide1.jpg' %}')">
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'assets/images/slide2.jpg' %}')">
+                </div>
+                <div class="carousel-item" style="background-image: url('{% static 'assets/images/slide3.jpg' %}')">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+
+            <!-- Hero Content -->
+            <div class="hero-content">
+                <h1>Tus materiales.<br>Clasificados. Sin esfuerzo.</h1>
+                <p>Aquí puedes gestionar tus procesos de almacenaje, clasificación, logística y disposición final de materiales.</p>
+                <!--<a href="{% url 'registro' %}" class="cta-button">Regístrate Gratis</a>-->
+                <a href="{% url 'login' %}" class="cta-button">Iniciar sesión</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Contenido del proyecto -->
+    <section class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h1 class="card-title text-center">¿De qué trata este proyecto?</h1>
+                        <p class="card-text text-center">
+                            EEste sistema revolucionario está diseñado para transformar y simplificar el proceso de gestión
+                             de residuos sólidos. Brinda a las empresas la capacidad de registrar, supervisar y optimizar 
+                             cada recolección, mientras asigna rutas y vehículos de manera precisa y eficiente, garantizando 
+                             un flujo sin contratiempos y cuidando el medio ambiente.
+
+
+                        </p>
+
+                        <!-- Botones para mostrar contenido dinámico -->
+                        <div class="text-center mt-4">
+                            <button class="btn btn-primary" onclick="mostrarSeccion('mision')">Misión y Visión</button>
+                            <button class="btn btn-secondary" onclick="mostrarSeccion('acerca')">Acerca de Nosotros</button>
+                        </div>
+
+                        <!-- Contenedor para desplegar la información -->
+                        <div id="contenido-dinamico" class="mt-4" style="background-color: var(--primaryColorVo); padding: 20px; display: none;">
+                            <!-- Aquí se mostrará el contenido dinámico -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Script para manejar la visualización del contenido dinámico -->
+    <script>
+        function mostrarSeccion(seccion) {
+            var contenedor = document.getElementById("contenido-dinamico");
+
+            // Definir el contenido para cada sección
+            var contenidoMision = `
+                <h2>Misión</h2>
+                <p>Impulsamos un futuro más limpio mediante la gestión eficiente de los residuos sólidos. Nuestra misión es optimizar
+                 recursos y procesos, asegurando una recolección impecable que contribuye activamente a la protección del entorno.</p>
+                <h2>Visión</h2>
+                <p>Nos visualizamos como líderes en el sector, aportando soluciones tecnológicas de vanguardia que transforman la
+                 recolección de residuos. Aspiramos a ser un referente en innovación, facilitando un proceso eficaz y sostenible que 
+                 mejore la gestión y disposición final de los residuos, contribuyendo al bienestar de nuestro planeta.</p>
+            `;
+
+            var contenidoAcerca = `
+                <h3>Acerca de Nosotros</h3>
+                <p>Nos proyectamos como una empresa líder en desarrollo de software, creando soluciones tecnológicas de vanguardia
+                 que transforman diversos sectores. Aunque uno de nuestros proyectos clave está enfocado en la gestión ambiental, 
+                 específicamente en la recolección de residuos sólidos, nuestro alcance es mucho mayor. Aspiramos a innovar en 
+                 múltiples industrias, ofreciendo herramientas eficientes y sostenibles que no solo optimizan procesos, sino que 
+                 también contribuyen al avance tecnológico y al bienestar general del planeta.</p>
+            `;
+
+            // Mostrar el contenido según la sección seleccionada
+            if (seccion === 'mision') {
+                contenedor.innerHTML = contenidoMision;
+            } else if (seccion === 'acerca') {
+                contenedor.innerHTML = contenidoAcerca;
+            }
+
+            // Hacer visible el contenedor si estaba oculto
+            contenedor.style.display = 'block';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

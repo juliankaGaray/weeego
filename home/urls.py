@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 # funciona gonorreaaaaaaaaaaaaaa
 
 from .views import (
+    home,
     productos,
     index,
     productos_template,
@@ -32,7 +33,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path('', index, name='index'),
+    path('', home, name='home'),
+    path('index/', index, name='index'), 
     path('user_login/', user_login, name='user_login'),
     path('registro/',registro, name='registro'),
     path('get/productos/', productos, name='productos'),
