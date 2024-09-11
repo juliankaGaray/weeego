@@ -12,7 +12,7 @@
                         </div>
                     </div>
 
-                    {% if rol == 'Comercial' %}
+                    {% if rol != 'Comercial' %}
                     <div class="row m-4">
                         <div class="col ">
                             <button type="button" class="btn btn-success" id="createCotizacionButton">Crear Cotización</button>
@@ -173,7 +173,10 @@ $(document).ready(function() {
                         <td>${cotizacion.tip_cotizacion}</td>
                         <td>
                             <button class="btn btn-primary btn-edit" data-id="${cotizacion.id}">Editar</button>
-                        </td>
+                           {% if rol == 'Comercial' or rol == 'Administrador' %}
+                            <a href="/cotizacion/${cotizacion.id}/factura/" class="btn btn-primary">Generar Factura</a>
+                            {%endif%}
+                            </td>
                     </tr>
                 `;
                 tableBody.append(row);
@@ -352,6 +355,17 @@ $(document).ready(function() {
         }
     });
 });
+
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Obtener la fecha actual
+        var today = new Date().toISOString().split('T')[0]; // Formato de fecha 'YYYY-MM-DD'
+
+        // Establecer el valor mínimo para el campo de fecha
+        document.getElementById("fecha").setAttribute('min', today);
+    });
+
 
 </script>
 {% endblock %}

@@ -4,63 +4,6 @@
 {% block title %} Dashboard {% endblock title %}
 {% block content %}
   <!-- [ Main Content ] start -->
-  <style>
-    body {
-      background-color: #D8E8C3; /* primaryColor */
-    }
-
-    .pc-container {
-      background-color: #D8E8C3; /* primaryColor */
-    }
-
-    .card {
-      background-color: #4BB649; /* primaryColorVc: Fondo de la tarjeta */
-      border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .card-body {
-      color: white;
-    }
-
-    .text-white {
-      color: white;
-    }
-
-    .dashnum-card {
-      background-color: #4BB649; /* primaryColorVc */
-    }
-
-    .btn-secondary {
-      background-color: #008E50; /* primaryColorVo */
-      border-color: #008E50;
-    }
-
-    .btn-secondary:hover {
-      background-color: #06F482; /* primaryColorVl */
-      border-color: #06F482;
-    }
-
-    .dropdown-menu {
-      background-color: #1F2736; /* primaryColorOs */
-      color: white;
-    }
-
-    .dropdown-item:hover {
-      background-color: #008E50; /* primaryColorVo */
-      color: white;
-    }
-
-    .card .round {
-      background-color: #DAF7A6; /* primaryColorVsc */
-    }
-
-    .col-xl-4  {
-      background-color: #DAF7A6; /* primaryColorVsc */
-    }
-
-    
-  </style>
   <div class="pc-container">
     <div class="pc-content">
       <!-- [ Main Content ] start -->
@@ -80,12 +23,10 @@
 
                 <div class="col-auto">
                   <div class="btn-group">
-                 
+                
                     <ul class="dropdown-menu dropdown-menu-end">
-                      
                       <li><button class="dropdown-item" type="button">Import Card</button></li>
                       <li><button class="dropdown-item" type="button">Export</button></li>
-                  
                     </ul>
                   </div>
                 </div>
@@ -96,12 +37,18 @@
         
           </div>
         </div>
-    
-        <div class="col-xl-4 col-md-12">
-    
-        </div>
 
-    
+        <!-- [ Chart Section ] start -->
+        <div class="col-xl-8 col-md-12">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Recolecciones por Fecha</h5>
+              <canvas id="recoleccionesChart"></canvas> <!-- Canvas para el gráfico -->
+            </div>
+          </div>
+        </div>
+        <!-- [ Chart Section ] end -->
+
         <!-- [ sample-page ] end -->
       </div>
       <!-- [ Main Content ] end -->
@@ -111,8 +58,71 @@
 {% endblock content %}
 
 {% block extra_js %}
-  <!-- Apex Chart -->
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{% static 'assets/js/plugins/apexcharts.min.js' %}"></script>
   <script src="{% static 'assets/js/pages/dashboard-default.js' %}"></script>
-  <!-- [Page Specific JS] end -->
+
+  <script>
+
+    function loadRecoleccionesData() {
+      
+        $.ajax({
+            url: '/get/recolecciones/',  
+            method: 'GET',
+            success: function(response) {
+                let fechas = [];
+                let cantidades = [];
+
+                response.recolecciones.forEach(function(recoleccion) {
+                    fechas.push(recoleccion.Fecha);  
+                    cantidades.push(recoleccion.Cantidad);  
+                });
+
+              
+                generateRecoleccionesChart(fechas, cantidades);
+            }
+        });
+    }
+
+
+    function generateRecoleccionesChart(fechas, cantidades) {
+        var ctx = document.getElementById('recoleccionesChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',  
+            data: {
+                labels: fechas,  
+                datasets: [{
+                    label: 'Cantidad de Recolecciones',
+                    data: cantidades,  // Eje Y 
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Recolecciones por Fecha'
+                    }
+                }
+            }
+        });
+    }
+
+  
+    $(document).ready(function() {
+        loadRecoleccionesData();  
+    });
+  </script>
 {% endblock extra_js %}

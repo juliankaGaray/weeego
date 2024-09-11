@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+            font-family: 'Helvetica Neue', sans-serif;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        td {
+            color: #555;
+        }
+        table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tbody tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="factura-header">
+        <h1>Factura</h1>
+        <p>Referencia: {{ id }}</p>
+    </div>
+
+    <div class="factura-summary">
+        <p><strong>Cliente:</strong> {{ cliente }}</p>
+        <p><strong>Empleado:</strong> {{ empleado }}</p>
+        <p><strong>Fecha:</strong> {{ fecha }}</p>
+    </div>
+
+    <h3>Detalles de la Cotización</h3>
+    <table class="factura-details">
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Cantidad</th>
+                <th>Tipo de Cotización</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ material }}</td>
+                <td>{{ cantidad }}</td>
+                <td>{{ tipo_cotizacion }}</td>
+                <td>{{ total }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>Estado:</strong> {{ estado }}</p>
+
+</body>
+</html>

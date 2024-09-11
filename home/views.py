@@ -17,6 +17,13 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import get_user_model
 from django.contrib import messages
 
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+
+
+
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -63,6 +70,62 @@ def inventario_template(request):
     rol = request.session.get('rol', '')
     print(rol)
     return render(request,'accounts/inventario.html', {'rol': rol}) 
+
+
+
+def generar_factura_pdf(request, cotizacion_id):
+    
+    connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+        
+    conn = pyodbc.connect(connection_string)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT co.cotizacion_id, cli.nombre, emp.nombre, co.fecha, co.total, co.estado, tip.descripcion, inv.descripcion, co.cantidad
+        FROM Cotizaciones co
+        INNER JOIN Clientes cli ON cli.cliente_id = co.cliente_id
+        INNER JOIN Empleados emp ON emp.empleado_id = co.empleado_id
+        INNER JOIN tipos_de_cotizacion tip ON tip.tipo_cotizacion_id = co.tipo_cotizacion_id
+        INNER JOIN inventarioMateriales inv ON co.material_id = inv.MaterialID
+        WHERE co.cotizacion_id = ?
+    """, (cotizacion_id,))
+    cotizacion = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not cotizacion:
+        return HttpResponse('Cotización no encontrada')
+
+    datos = {
+         'id': cotizacion[0],
+        'cliente': cotizacion[1],
+        'empleado': cotizacion[2],
+        'fecha': cotizacion[3],
+        'total': cotizacion[4],
+        'estado': cotizacion[5],
+        'tipo_cotizacion': cotizacion[6],
+        'material': cotizacion[7],
+        'cantidad': cotizacion[8]
+    }
+
+    template = get_template('accounts/factura.html')
+    html = template.render(datos)
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="factura_{cotizacion_id}.pdf"'
+    
+    pisa_status = pisa.CreatePDF(BytesIO(html.encode("UTF-8")), dest=response)
+    
+    if pisa_status.err:
+        return HttpResponse(f'Error al generar el PDF: {pisa_status.err}', status=500)
+    
+    return response
 
 
 
@@ -124,7 +187,9 @@ def user_login(request):
     return render(request, 'accounts/login.html', {'next': next_url})
 
 
+@login_required
 def registro(request):
+    rol = request.session.get('rol', '')
     if request.method == 'POST':
         username = request.POST.get('usuario')
         password = request.POST.get('clave')
@@ -133,22 +198,36 @@ def registro(request):
         email = request.POST.get('email')
         fecha = request.POST.get('fecha')
 
+        
+        #Encripta la contraseña
         hashed_password = make_password(password)
 
-        # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
-        conn = pyodbc.connect(settings.SQL_SERVER_CONNECTION_STRING)
-        cursor = conn.cursor()
      
+     
+        # Construir la cadena de conexión manualmente utilizando los parámetros en settings.DATABASES
+        connection_string = (
+            f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+            f"SERVER={settings.DATABASES['default']['HOST']};"
+            f"DATABASE={settings.DATABASES['default']['NAME']};"
+            f"UID={settings.DATABASES['default']['USER']};"
+            f"PWD={settings.DATABASES['default']['PASSWORD']};"
+            f"TrustServerCertificate=yes;"
+        )
+        
         conn = pyodbc.connect(connection_string)
         cursor = conn.cursor()
 
+       
         cursor.execute('INSERT INTO usuarios (nombre_usuario,contrasena,nombre_completo,rol,email,fecha_creacion) VALUES (?, ?, ?,?,?,?)',(username,hashed_password,nombre,rol,email, fecha))
         conn.commit()
         conn.close()
 
-        return redirect('login')
+        return redirect('index')
     
-    return render(request, 'accounts/registro.html')
+    return render(request, 'accounts/registro.html', {'rol': rol})
+
+
+
 
 
 def user_logout(request):
@@ -1077,3 +1156,4 @@ def inventario_detalle(request, id=None):
     cursor.close()
     conn.close()
     return JsonResponse({'error': 'Método no permitido'}, status=405)
+
