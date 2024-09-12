@@ -20,7 +20,7 @@ if not SECRET_KEY:
 # Modo de depuración
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['weeegoapp-btgcf0eccmh0a4h9.eastus-01.azurewebsites.net', 'localhost']
 
 # Añadir tus hosts de despliegue aquí
 CSRF_TRUSTED_ORIGINS = [
@@ -127,6 +127,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Archivos estáticos (CSS, JavaScript, Imágenes)
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
