@@ -56,6 +56,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django.middleware.cache.FetchFromCacheMiddleware",
+    "django.middleware.cache.UpdateCacheMiddleware",
     # "django.contrib.sessions.middleware.NoCacheMiddleware",
 ]
 
@@ -146,3 +148,7 @@ LOGIN_REDIRECT_URL = '/'
 
 # Configuración de backend de correo electrónico
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# cache entre paginas
+CACHE_MIDDLEWARE_SECONDS = 0
+CACHE_MIDDLEWARE_KEY_PREFIX = ''

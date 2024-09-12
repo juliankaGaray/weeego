@@ -67,7 +67,7 @@ urlpatterns = [
     path('inventario/data/', inventario, name='inventario_data'),
     path('inventario/<int:id>/',inventario_detalle, name='inventario_detalle'),
     path('inventario/',inventario_detalle, name='create_inventario'),
-        path('cotizacion/<int:cotizacion_id>/factura/', generar_factura_pdf, name='generar_factura_pdf'), 
+    path('cotizacion/<int:cotizacion_id>/factura/', generar_factura_pdf, name='generar_factura_pdf'), 
 
      
 
