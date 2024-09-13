@@ -23,7 +23,7 @@
           <a href="/" class="pc-link">
           {% endif %}
             <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
-            <span class="pc-mtext">Home</span></a>
+            <span class="pc-mtext">Pagina principal</span></a>
         </li>
 
         {% admin_get_menu as app_list %}
@@ -57,7 +57,7 @@
         {% endif %}
 
         <li class="pc-item pc-caption">
-          <label>Pages</label>
+          <label>Procesos</label>
           <i class="ti ti-news"></i>
         </li>
         <li class="pc-item pc-hasmenu">
@@ -70,7 +70,7 @@
               
               <li class="pc-item"><a class="pc-link" href="{% url 'cotizacion_template' %}">Cotización</a></li>
               <li class="pc-item"><a class="pc-link" href="{% url 'inventario_template' %}">Inventario</a></li>
-              <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Logout</a></li>
+              <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Salir</a></li>
 
               {% endif %}
           
@@ -83,13 +83,13 @@
             <li class="pc-item"><a class="pc-link" href="{% url 'cotizacion_template' %}">Cotización</a></li>
             <li class="pc-item"><a class="pc-link" href="{% url 'inventario_template' %}">Inventario</a></li>
             <li class="pc-item"><a class="pc-link" href="{% url 'registro' %}">Registro Usuario</a></li>
-            <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Logout</a></li>
+            <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Salir</a></li>
             {% endif %}
 
             {% if rol == 'Logistica' %}
             <li class="pc-item"><a class="pc-link" href="{% url 'cotizacion_template' %}">Cotización</a></li>
             <li class="pc-item"><a class="pc-link" href="{% url 'inventario_template' %}">Inventario</a></li>
-            <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Logout</a></li>
+            <li class="pc-item"><a class="pc-link" href="{% url 'logout' %}">Salir</a></li>
             {% endif %}
           </ul>
         </li>
