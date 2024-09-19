@@ -479,7 +479,7 @@ def recolecciones(request):
             INNER JOIN Rutas rut ON rec.ruta_id = rut.ruta_id
             INNER JOIN Vehículos vehi ON rec.vehiculo_id = vehi.vehiculo_id
             INNER JOIN Tipos_de_Basura tip ON rec.tipo_basura_id = tip.tipo_basura_id
-            inner join InventarioMateriales inv on rec.MATERIAL_ID = INV.MATERIALID
+            inner join InventarioMateriales inv on rec.material_id = inv.MaterialID
         """)
         rows = cursor.fetchall()
 
