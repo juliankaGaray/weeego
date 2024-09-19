@@ -20,11 +20,11 @@ if not SECRET_KEY:
 # Modo de depuración
 DEBUG = True
 
-ALLOWED_HOSTS = ['weeegoapp-btgcf0eccmh0a4h9.eastus-01.azurewebsites.net', 'localhost']
+ALLOWED_HOSTS = ['weeegowebapp-b7bhegcecmgabgau.brazilsouth-01.azurewebsites.net', 'localhost']
 
 # Añadir tus hosts de despliegue aquí
 CSRF_TRUSTED_ORIGINS = [
-    'https://weeegoapp-btgcf0eccmh0a4h9.eastus-01.azurewebsites.net',
+    'https://weeegowebapp-b7bhegcecmgabgau.brazilsouth-01.azurewebsites.net',
     'http://localhost:8000',
     'http://localhost:5085',
     'http://127.0.0.1:8000',
@@ -96,7 +96,7 @@ DATABASES = {
         'NAME': 'RECOLECCION_BD',  # Nombre de tu base de datos
         'USER': 'admin1',  # Usuario de Azure SQL
         'PASSWORD': 'Weeego123',  # Contraseña de Azure SQL
-        'HOST': 'srvweeegoo.database.windows.net',  # Servidor de Azure SQL
+        'HOST': 'weeegowebapp-b7bhegcecmgabgau.brazilsouth-01.azurewebsites.net',  # Servidor de Azure SQL
         'PORT': '1433',  # Puerto de Azure SQL (por defecto 1433)
         'OPTIONS': {
             'driver': 'ODBC Driver 17 for SQL Server',
