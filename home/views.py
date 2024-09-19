@@ -92,7 +92,7 @@ def generar_factura_pdf(request, cotizacion_id):
         INNER JOIN Clientes cli ON cli.cliente_id = co.cliente_id
         INNER JOIN Empleados emp ON emp.empleado_id = co.empleado_id
         INNER JOIN tipos_de_cotizacion tip ON tip.tipo_cotizacion_id = co.tipo_cotizacion_id
-        INNER JOIN inventarioMateriales inv ON co.material_id = inv.MaterialID
+        INNER JOIN inventarioMateriales inv ON co.MaterialID = inv.MaterialID
         WHERE co.cotizacion_id = ?
     """, (cotizacion_id,))
     cotizacion = cursor.fetchone()
@@ -479,10 +479,11 @@ def recolecciones(request):
             INNER JOIN Rutas rut ON rec.ruta_id = rut.ruta_id
             INNER JOIN Vehículos vehi ON rec.vehiculo_id = vehi.vehiculo_id
             INNER JOIN Tipos_de_Basura tip ON rec.tipo_basura_id = tip.tipo_basura_id
-            inner join InventarioMateriales inv on rec.material_id = inv.MaterialID
+            inner join InventarioMateriales inv on rec.MaterialID = inv.MaterialID
         """)
         rows = cursor.fetchall()
 
+        # Recolecciones
         recolecciones = []
         for row in rows:
             recolecciones.append({
@@ -531,16 +532,16 @@ def recolecciones(request):
             
             # Insertar la recolección en la base de datos
             cursor.execute("""
-                INSERT INTO Recogidas (cliente_id, empleado_id, ruta_id, vehiculo_id, tipo_basura_id, fecha, hora, cantidad, material_id)
+                INSERT INTO Recogidas (cliente_id, empleado_id, ruta_id, vehiculo_id, tipo_basura_id, fecha, hora, cantidad, MaterialID)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['material_id']))
+            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['MaterialID']))
             
             # Actualizar la cantidad del material en el inventario
-            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['material_id'],))
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['MaterialID'],))
             row = cursor.fetchone()
             if row:
                 nueva_cantidad = row[0] + int(data['cantidad'])  # Sumar la cantidad recogida al inventario
-                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['material_id']))
+                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['MaterialID']))
 
             conn.commit()
             cursor.close()
@@ -572,7 +573,7 @@ def recoleccion_detalle(request, id):
     if request.method == "GET":
         # Fetch a specific recoleccion
         cursor.execute("""
-            SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa, tip.descripcion, rec.fecha, rec.hora, rec.cantidad, rec.material_id
+            SELECT rec.recogida_id, CLI.nombre, emp.nombre, rut.descripcion, vehi.placa, tip.descripcion, rec.fecha, rec.hora, rec.cantidad, rec.MaterialID
             FROM Recogidas rec
             INNER JOIN Clientes CLI ON CLI.cliente_id = rec.cliente_id
             INNER JOIN Empleados emp ON emp.empleado_id = rec.empleado_id
@@ -594,7 +595,7 @@ def recoleccion_detalle(request, id):
                 'fecha': row[6],
                 'hora': row[7],
                 'cantidad': row[8],
-                'material_id': row[9]
+                'MaterialID': row[9]
             }
             cursor.close()
             conn.close()
@@ -608,30 +609,30 @@ def recoleccion_detalle(request, id):
         try:
             data = json.loads(request.body.decode('utf-8'))
 
-            cursor.execute("SELECT cantidad, material_id FROM Recogidas WHERE recogida_id=?", (id,))
+            cursor.execute("SELECT cantidad, MaterialID FROM Recogidas WHERE recogida_id=?", (id,))
             original_recoleccion = cursor.fetchone()
 
             if original_recoleccion:
                 cantidad_original = original_recoleccion[0]
-                material_id_original = original_recoleccion[1]
+                MaterialID_original = original_recoleccion[1]
 
-                cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id_original,))
+                cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (MaterialID_original,))
                 row = cursor.fetchone()
                 if row:
                     nueva_cantidad = row[0] - cantidad_original  
-                    cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, material_id_original))
+                    cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, MaterialID_original))
 
             cursor.execute("""
                 UPDATE Recogidas
-                SET cliente_id=?, empleado_id=?, ruta_id=?, vehiculo_id=?, tipo_basura_id=?, fecha=?, hora=?, cantidad=?, material_id=?
+                SET cliente_id=?, empleado_id=?, ruta_id=?, vehiculo_id=?, tipo_basura_id=?, fecha=?, hora=?, cantidad=?, MaterialID=?
                 WHERE recogida_id=?
-            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['material_id'], id))
+            """, (data['cliente_id'], data['empleado_id'], data['ruta_id'], data['vehiculo_id'], data['tipo_basura_id'], data['fecha'], data['hora'], data['cantidad'], data['MaterialID'], id))
             
-            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['material_id'],))
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (data['MaterialID'],))
             row = cursor.fetchone()
             if row:
                 nueva_cantidad = row[0] + data['cantidad']  
-                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['material_id']))
+                cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, data['MaterialID']))
 
             conn.commit()
             cursor.close()
@@ -784,7 +785,7 @@ def cotizaciones(request):
     cursor.execute("""    SELECT co.cotizacion_id, emp.nombre, cli.nombre,co.fecha,co.total,co.estado, tip.descripcion,cruce_costos, inv.descripcion,co.cantidad from Cotizaciones as co inner join Clientes cli on cli.cliente_id = co.cliente_id
 inner join Empleados emp on emp.empleado_id = co.empleado_id
 inner join tipos_de_cotizacion tip on tip.tipo_cotizacion_id = co.tipo_cotizacion_id
-inner join inventarioMateriales inv on co.material_id = inv.MaterialID""")
+inner join inventarioMateriales inv on co.MaterialID = inv.MaterialID""")
     rows = cursor.fetchall()
 
     cotizaciones = []
@@ -894,7 +895,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             data = json.loads(request.body.decode('utf-8'))
             cliente_id = data.get('cliente_id')
             empleado_id = data.get('empleado_id')
-            material_id = data.get('material_id')
+            MaterialID = data.get('MaterialID')
             cantidad_solicitada = int(data.get('cantidad_solicitada'))
             fecha = data.get('fecha')
             total = data.get('total')
@@ -902,7 +903,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             tipo_cotizacion_id = data.get('tipo_cotizacion_id')
             cruce_costos = data.get('cruce_costos')
 
-            if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
+            if not all([cliente_id, empleado_id, MaterialID, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
                 return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
 
             
@@ -918,7 +919,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
             conn = pyodbc.connect(connection_string)
             cursor = conn.cursor()
 
-            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id,))
+            cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (MaterialID,))
             row = cursor.fetchone()
 
             if row is None:
@@ -936,13 +937,13 @@ def cotizacion_detalle(request, cotizacion_id=None):
 
             
             nueva_cantidad = cantidad_disponible - cantidad_solicitada
-            cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, material_id))
+            cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (nueva_cantidad, MaterialID))
 
            
             cursor.execute("""
-                INSERT INTO Cotizaciones (cliente_id, empleado_id, material_id, cantidad, fecha, total, estado, tipo_cotizacion_id, cruce_costos)
+                INSERT INTO Cotizaciones (cliente_id, empleado_id, MaterialID, cantidad, fecha, total, estado, tipo_cotizacion_id, cruce_costos)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos))
+            """, (cliente_id, empleado_id, MaterialID, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos))
 
             conn.commit()
             cursor.close()
@@ -954,7 +955,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
         data = json.loads(request.body.decode('utf-8'))
         cliente_id = data.get('cliente_id')
         empleado_id = data.get('empleado_id')
-        material_id = data.get('material_id')
+        MaterialID = data.get('MaterialID')
         cantidad_solicitada = int(data.get('cantidad_solicitada'))  # Convertir a entero
         fecha = data.get('fecha')
         total = data.get('total')
@@ -962,7 +963,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
         tipo_cotizacion_id = data.get('tipo_cotizacion_id')
         cruce_costos = data.get('cruce_costos')
 
-        if not all([cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
+        if not all([cliente_id, empleado_id, MaterialID, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id]):
             return JsonResponse({'error': 'Faltan campos requeridos'}, status=400)
         
         
@@ -989,7 +990,7 @@ def cotizacion_detalle(request, cotizacion_id=None):
 
         cantidad_original = int(row[0])
 
-        cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (material_id,))
+        cursor.execute("SELECT CantidadDisponible FROM InventarioMateriales WHERE MaterialID=?", (MaterialID,))
         row = cursor.fetchone()
 
         if row is None:
@@ -1007,13 +1008,13 @@ def cotizacion_detalle(request, cotizacion_id=None):
             return JsonResponse({'error': 'Cantidad solicitada excede el inventario disponible'}, status=400)
 
         cantidad_final = nueva_cantidad_disponible - cantidad_solicitada
-        cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (cantidad_final, material_id))
+        cursor.execute("UPDATE InventarioMateriales SET CantidadDisponible=? WHERE MaterialID=?", (cantidad_final, MaterialID))
 
         cursor.execute("""
             UPDATE Cotizaciones
-            SET cliente_id=?, empleado_id=?, material_id=?, cantidad=?, fecha=?, total=?, estado=?, tipo_cotizacion_id=?, cruce_costos=?
+            SET cliente_id=?, empleado_id=?, MaterialID=?, cantidad=?, fecha=?, total=?, estado=?, tipo_cotizacion_id=?, cruce_costos=?
             WHERE cotizacion_id=?
-        """, (cliente_id, empleado_id, material_id, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos, cotizacion_id))
+        """, (cliente_id, empleado_id, MaterialID, cantidad_solicitada, fecha, total, estado, tipo_cotizacion_id, cruce_costos, cotizacion_id))
 
         conn.commit()
         cursor.close()
